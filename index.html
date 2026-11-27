@@ -95,11 +95,18 @@ textarea{width:100%;resize:vertical}
 .ov-cn{position:absolute;top:110px;left:0;font-size:11px;color:var(--text2);background:var(--panel);padding-right:4px}
 .ov-cline{position:absolute;left:0;right:0;top:118px;border-top:1px dashed var(--line2)}
 
-main{display:grid;grid-template-columns:minmax(0,1fr) 400px;flex:1;min-height:0}
+main{display:grid;grid-template-columns:minmax(0,1fr) 7px 400px;flex:1;min-height:0}
+main.custom{grid-template-columns:min(var(--calW), calc(100% - 327px)) 7px minmax(320px,1fr)}
 #calScroll{overflow:auto;position:relative;min-height:0}
-#side{overflow:auto;border-left:1px solid var(--line);background:var(--panel);min-height:0}
+#side{overflow:auto;background:var(--panel);min-height:0}
+#splitter{cursor:col-resize;background:var(--bg);border-left:1px solid var(--line);border-right:1px solid var(--line);position:relative;touch-action:none;outline:none}
+#splitter::after{content:"";position:absolute;top:50%;left:1px;width:3px;height:40px;margin-top:-20px;border-radius:2px;background:var(--line2)}
+#splitter:hover,#splitter:focus-visible,#splitter.drag{background:var(--accent-bg);border-color:var(--accent)}
+#splitter:hover::after,#splitter.drag::after{background:var(--accent)}
+body.resizing,body.resizing *{cursor:col-resize!important;user-select:none}
 @media (max-width:980px){
   #app{height:auto;display:block}
+  #splitter{display:none}
   main{display:block}
   #calScroll{height:72vh}
   #side{border-left:0;border-top:1px solid var(--line)}
@@ -314,6 +321,7 @@ body.chipdrag,body.chipdrag *{cursor:grabbing!important}
   <div id="ovw"><div class="ov" id="ov" title="クリックするとカレンダーがその週へ移動します"></div></div>
   <main>
     <section id="calScroll"><div id="cal"></div></section>
+    <div id="splitter" role="separator" aria-orientation="vertical" aria-label="カレンダーの幅" tabindex="0" title="ドラッグでカレンダーの幅を変える（ダブルクリックで元に戻す）"></div>
     <aside id="side"></aside>
   </main>
 </div>
@@ -1547,6 +1555,29 @@ function setWeekStart(v) {
   keepView(() => { prefs.weekStart = v === 'sun' ? 'sun' : 'mon'; savePrefs(); });
   toast(v === 'sun' ? '日曜始まりにしました' : '月曜始まりにしました');
 }
+// カレンダーと右の一覧の境目（ブラウザごとに覚える）
+function applySplit() {
+  const m = document.querySelector('main');
+  if (prefs.calW) { m.classList.add('custom'); m.style.setProperty('--calW', prefs.calW + 'px'); }
+  else { m.classList.remove('custom'); m.style.removeProperty('--calW'); }
+}
+function bindSplitter() {
+  const sp = $('#splitter'), m = document.querySelector('main');
+  const setW = w => { const r = m.getBoundingClientRect(); prefs.calW = Math.round(Math.max(480, Math.min(r.width - 327, w))); applySplit(); };
+  sp.addEventListener('pointerdown', e => {
+    if (e.button !== 0) return; e.preventDefault();
+    const left = m.getBoundingClientRect().left;
+    sp.setPointerCapture(e.pointerId); sp.classList.add('drag'); document.body.classList.add('resizing');
+    const move = ev => setW(ev.clientX - left - 3);
+    const up = () => { sp.removeEventListener('pointermove', move); sp.removeEventListener('pointerup', up); sp.removeEventListener('pointercancel', up); sp.classList.remove('drag'); document.body.classList.remove('resizing'); savePrefs(); };
+    sp.addEventListener('pointermove', move); sp.addEventListener('pointerup', up); sp.addEventListener('pointercancel', up);
+  });
+  sp.addEventListener('dblclick', () => { delete prefs.calW; savePrefs(); applySplit(); toast('カレンダーの幅を元に戻しました'); });
+  sp.addEventListener('keydown', e => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return; e.preventDefault();
+    setW($('#calScroll').getBoundingClientRect().width + (e.key === 'ArrowLeft' ? -40 : 40)); savePrefs();
+  });
+}
 const CAL_SIZES = ['極小', '小', '中', '大', '特大'];
 const calSize = () => { const n = prefs.calSize; return Number.isInteger(n) && n >= 0 && n < CAL_SIZES.length ? n : 2; };
 function zoomCal(d) {
@@ -1647,6 +1678,7 @@ function bindEvents() {
     scrollToDn(a + Math.floor((e.clientX - r.left) / r.width * (b - a + 1)) - 7);
   });
   $('#cal').addEventListener('pointerdown', onCalDown);
+  bindSplitter(); applySplit();
   const side = $('#side');
   side.addEventListener('click', e => {
     const t = e.target.closest('[data-act]'); if (t) { if (!t.disabled) doAct(t.dataset.act, t, e); return; }
