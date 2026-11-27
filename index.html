@@ -105,7 +105,15 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 400px;flex:1;min-height:0}
   #side{border-left:0;border-top:1px solid var(--line)}
 }
 
-#cal{min-width:660px;padding:0 10px 30px}
+#cal{--rowH:92px;--fs:11px;--clh:16px;--hp:23px;--lh:17px;--chFs:12px;--chLH:18px;min-width:660px;padding:0 10px 30px}
+#cal.sz0{--rowH:40px;--fs:11px;--clh:14px;--hp:18px;--lh:14px;--chFs:11px;--chLH:13px;min-width:500px}
+#cal.sz1{--rowH:62px;--fs:11px;--clh:15px;--hp:20px;--lh:15px;--chFs:11px;--chLH:15px;min-width:580px}
+#cal.sz3{--rowH:122px;--fs:12px;--clh:18px;--hp:26px;--lh:19px;--chFs:13px;--chLH:20px;min-width:760px}
+#cal.sz4{--rowH:152px;--fs:13px;--clh:20px;--hp:29px;--lh:21px;--chFs:14px;--chLH:22px;min-width:860px}
+#cal.sz0 .chip small{display:none}
+.zoom{display:flex;align-items:center;gap:4px}
+.zoom button{padding:0 9px;line-height:22px}
+.zoom .zv{font-size:12px;min-width:2.5em;text-align:center;color:var(--text2)}
 .wh{position:sticky;top:0;z-index:6;display:grid;grid-template-columns:52px repeat(7,minmax(0,1fr));background:var(--bg);font-size:12px;color:var(--text2);text-align:center;padding:5px 0 3px}
 .wh .sun{color:var(--sun)} .wh .sat{color:var(--sat)}
 .wk{display:grid;grid-template-columns:52px minmax(0,1fr)}
@@ -114,7 +122,7 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 400px;flex:1;min-height:0}
 .wl i{display:block;font-style:normal;font-size:11px;color:var(--text3)}
 .wl .lbt{color:var(--sat);margin-top:2px}
 .days{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
-.cell{position:relative;min-height:calc(92px + var(--nl,0) * 17px);padding:calc(23px + var(--nl,0) * 17px) 3px 4px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel);cursor:cell;user-select:none;min-width:0}
+.cell{position:relative;min-height:calc(var(--rowH) + var(--nl,0) * var(--lh));padding:calc(var(--hp) + var(--nl,0) * var(--lh)) 3px 4px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:var(--panel);cursor:cell;user-select:none;min-width:0}
 .cell:first-child{border-left:1px solid var(--line)}
 .cell.out{background:var(--out)}
 .cell.lb{background:var(--lb)}
@@ -124,28 +132,28 @@ main{display:grid;grid-template-columns:minmax(0,1fr) 400px;flex:1;min-height:0}
 .cell.ml{border-left:2px solid var(--line2)}
 .cell.rsel{background:var(--accent-bg)}
 .cell.cur{outline:2px solid var(--accent);outline-offset:-2px;z-index:2}
-.ch{position:absolute;top:3px;left:5px;right:4px;display:flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap;overflow:hidden;line-height:18px}
+.ch{position:absolute;top:3px;left:5px;right:4px;display:flex;align-items:center;gap:4px;font-size:var(--chFs);white-space:nowrap;overflow:hidden;line-height:var(--chLH)}
 .ch .d{font-weight:700}
 .cell.out .ch .d{color:var(--text3)}
 .cell.sun .ch .d,.cell.hol .ch .d{color:var(--sun)}
 .cell.sat .ch .d{color:var(--sat)}
 .cell.today .ch .d{background:var(--accent);color:var(--on-accent);border-radius:9px;padding:0 6px}
 .ch .hn{font-size:11px;color:var(--sun);overflow:hidden;text-overflow:ellipsis}
-.cand{margin-left:auto;flex:none;font-weight:700;font-size:13px;width:20px;height:20px;border-radius:50%;display:inline-grid;place-items:center;line-height:1}
+.cand{margin-left:auto;flex:none;font-weight:700;font-size:var(--chFs,13px);width:calc(var(--chLH,18px) + 2px);height:calc(var(--chLH,18px) + 2px);border-radius:50%;display:inline-grid;place-items:center;line-height:1}
 .cand.ok{color:var(--ok);background:var(--ok-bg)}
 .cand.tri{color:var(--warn);background:var(--warn-bg)}
 .cand.x{color:var(--err);background:var(--err-bg)}
 .chips{display:flex;flex-direction:column;gap:2px}
-.chip{display:flex;align-items:center;gap:3px;font-size:11px;line-height:16px;padding:0 4px;border-radius:4px;white-space:nowrap;overflow:hidden;cursor:grab;touch-action:none;background:hsl(var(--h) var(--cs) var(--cl));color:hsl(var(--h) 65% var(--ct));border:1px solid hsl(var(--h) 55% var(--cb) / .55)}
-.chip small{font-size:11px;opacity:.8;margin-left:auto;flex:none}
-.chip.r-D{background:hsl(var(--h) 62% var(--dl));color:#fff;border-color:transparent;font-weight:700;line-height:20px}
+.chip{display:flex;align-items:center;gap:3px;font-size:var(--fs);line-height:var(--clh);padding:0 4px;border-radius:4px;white-space:nowrap;overflow:hidden;cursor:grab;touch-action:none;background:hsl(var(--h) var(--cs) var(--cl));color:hsl(var(--h) 65% var(--ct));border:1px solid hsl(var(--h) 55% var(--cb) / .55)}
+.chip small{font-size:var(--fs);opacity:.8;margin-left:auto;flex:none}
+.chip.r-D{background:hsl(var(--h) 62% var(--dl));color:#fff;border-color:transparent;font-weight:700;line-height:calc(var(--clh) + 4px)}
 .chip.sel{box-shadow:0 0 0 2px hsl(var(--h) 75% 48%)}
 .chip.moving{opacity:.75}
 .chip.warn{border:1px dashed var(--warn-line)}
 .chip.warn::before{content:"!";flex:none;display:inline-grid;place-items:center;width:12px;height:12px;border-radius:50%;background:var(--warn-line);color:#fff;font-size:10px;font-weight:700;line-height:1}
 .chip.ghost{background:transparent;border:1px dashed var(--line2);color:var(--text2);cursor:default}
-.mk{font-size:11px;color:var(--err);border:1px solid var(--err);border-radius:4px;padding:0 4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:16px}
-.bar{position:absolute;height:15px;font-size:11px;line-height:15px;padding:0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:hsl(var(--h) var(--es) var(--el));color:hsl(var(--h) 45% var(--et));cursor:pointer;z-index:1}
+.mk{font-size:var(--fs);color:var(--err);border:1px solid var(--err);border-radius:4px;padding:0 4px;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:var(--clh)}
+.bar{position:absolute;height:calc(var(--lh) - 2px);font-size:var(--fs);line-height:calc(var(--lh) - 2px);padding:0 5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:hsl(var(--h) var(--es) var(--el));color:hsl(var(--h) 45% var(--et));cursor:pointer;z-index:1}
 .bar.s{border-top-left-radius:4px;border-bottom-left-radius:4px}
 .bar.e{border-top-right-radius:4px;border-bottom-right-radius:4px}
 body.dragging .bar{pointer-events:none}
@@ -850,7 +858,8 @@ function renderPlanbar() {
   const p = activePlan();
   let h = `<span class="pl">案</span><div class="tabs">${T.plans.map(x => `<button class="ptab ${x.id === p.id ? 'on' : ''}" data-act="plan" data-pid="${x.id}" title="ダブルクリックで名前を変える">${esc(x.name)}${T.confirmed && T.confirmed.planId === x.id ? ' <i class="cf">確定</i>' : ''}</button>`).join('')}`;
   if (!ui.viewOnly) h += `<button class="ptab add" data-act="plan-menu">＋ 案を増やす・編集</button>`;
-  h += `</div><label class="cmp">比べる案 <select data-act-change="compare"><option value="">なし</option>${T.plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}" ${ui.compare === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>`;
+  h += `</div><span class="zoom" title="カレンダーの表示サイズ"><span class="pl">表示</span><button data-act="zoom" data-d="-1" aria-label="小さく" ${calSize() === 0 ? 'disabled' : ''}>−</button><span class="zv">${CAL_SIZES[calSize()]}</span><button data-act="zoom" data-d="1" aria-label="大きく" ${calSize() === CAL_SIZES.length - 1 ? 'disabled' : ''}>＋</button></span>`;
+  h += `<label class="cmp">比べる案 <select data-act-change="compare"><option value="">なし</option>${T.plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}" ${ui.compare === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>`;
   h += `<input class="pmemo" data-act-change="plan-memo" placeholder="この案のねらい（メモ）" value="${esc(p.memo || '')}" ${ui.viewOnly ? 'disabled' : ''}>`;
   $('#planbar').innerHTML = h;
 }
@@ -953,11 +962,12 @@ function renderCalendar() {
     }
     wev.filter(x => x.l < 4).forEach(x => {
       const col = x.cs - w, span = x.ct - x.cs + 1, c = CATS[x.e.cat] || CATS.memo, st = x.s >= w, en = x.t <= we;
-      h += `<div class="bar${st ? ' s' : ''}${en ? ' e' : ''}" data-eid="${x.e.id}" style="left:calc(${col} * 100% / 7 + ${st ? 3 : 0}px);width:calc(${span} * 100% / 7 - ${(st ? 3 : 0) + (en ? 3 : 0)}px);top:${23 + x.l * 17}px;--h:${c.hue};${c.sat != null ? `--es:${c.sat}%;` : ''}" title="${esc(x.e.title)}（${esc(c.name)}） ${fmt(x.s)}〜${fmt(x.t)}\nクリックで編集">${esc(x.e.title)}</div>`;
+      h += `<div class="bar${st ? ' s' : ''}${en ? ' e' : ''}" data-eid="${x.e.id}" style="left:calc(${col} * 100% / 7 + ${st ? 3 : 0}px);width:calc(${span} * 100% / 7 - ${(st ? 3 : 0) + (en ? 3 : 0)}px);top:calc(var(--hp) + ${x.l} * var(--lh));--h:${c.hue};${c.sat != null ? `--es:${c.sat}%;` : ''}" title="${esc(x.e.title)}（${esc(c.name)}） ${fmt(x.s)}〜${fmt(x.t)}\nクリックで編集">${esc(x.e.title)}</div>`;
     });
     h += '</div></div>';
   }
   h += `<div class="legend-cal"><span><i style="background:var(--lb)"></i>長期休暇</span><span><i style="background:var(--nx)"></i>次の期（${dnYmd(nfs).m}月定例は今期のうちに決める）</span><span><i style="background:var(--out)"></i>期の外</span><span>日曜をクリック：代議員会を置く</span><span>日付をドラッグ：予定を入れる</span><span>色の札をドラッグ：日程を動かす</span></div>`;
+  $('#cal').className = 'sz' + calSize();
   $('#cal').innerHTML = h;
 }
 
@@ -1519,13 +1529,21 @@ function openSettings() {
     });
   });
 }
-function setWeekStart(v) {
-  // 切り替えても、いま見ている週のあたりを表示したままにする
+// 表示を変えても、いま見ている週のあたりを表示したままにする
+function keepView(fn) {
   const sc = $('#calScroll'), wk = [...document.querySelectorAll('#cal .wk')].find(w => w.offsetTop + w.offsetHeight > sc.scrollTop + 34);
   const keep = wk ? +wk.querySelector('.cell').dataset.dn + 3 : null;
-  prefs.weekStart = v === 'sun' ? 'sun' : 'mon'; savePrefs();
-  render(); if (keep != null) scrollToDn(keep, false);
+  fn(); render(); if (keep != null) scrollToDn(keep, false);
+}
+function setWeekStart(v) {
+  keepView(() => { prefs.weekStart = v === 'sun' ? 'sun' : 'mon'; savePrefs(); });
   toast(v === 'sun' ? '日曜始まりにしました' : '月曜始まりにしました');
+}
+const CAL_SIZES = ['極小', '小', '中', '大', '特大'];
+const calSize = () => { const n = prefs.calSize; return Number.isInteger(n) && n >= 0 && n < CAL_SIZES.length ? n : 2; };
+function zoomCal(d) {
+  const n = Math.max(0, Math.min(CAL_SIZES.length - 1, calSize() + d)); if (n === calSize()) return;
+  keepView(() => { prefs.calSize = n; savePrefs(); });
 }
 async function switchTerm(n) {
   if (!root.terms[n]) {
@@ -1576,6 +1594,7 @@ function openHelp() {
 function doAct(act, t, e) {
   switch (act) {
     case 'undo': undo(); break;
+    case 'zoom': zoomCal(+t.dataset.d); break;
     case 'login': login(); break;
     case 'logout': logout(); break;
     case 'share': openShare(); break;
