@@ -4,11 +4,16 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>代議員会日程調整くん</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#f4f4f1; --panel:#ffffff; --panel2:#f8f8f6; --line:#e1e0da; --line2:#c8c6bd;
   --text:#1d1d1b; --text2:#5a5954; --text3:#8c8a83;
-  --accent:#2457d6; --accent-bg:#e8eeff; --on-accent:#ffffff;
+  --accent:#5046e5; --accent2:#d946ef; --accent-bg:#eef0ff; --on-accent:#ffffff;
+  --kun-body:#ffffff; --kun-line:#2b2f3a; --dot:rgba(80,70,229,.08); --hover:rgba(80,70,229,.05);
+  --card-shadow:0 1px 2px rgba(20,20,60,.05),0 4px 14px rgba(20,20,60,.06);
   --err:#c22b2b; --err-bg:#fdeded; --warn:#955600; --warn-bg:#fff2d6; --warn-line:#e0a032;
   --ok:#2b7a37; --ok-bg:#e6f3e7;
   --out:#ebeae5; --lb:#e6f1f9; --nx:#f3f0fa; --sun:#c22b2b; --sat:#2457d6;
@@ -21,7 +26,9 @@
   :root{
     --bg:#181817; --panel:#222220; --panel2:#2a2a27; --line:#393834; --line2:#56544e;
     --text:#ecebe6; --text2:#b2b0a8; --text3:#85837b;
-    --accent:#86a6ff; --accent-bg:#243150; --on-accent:#0d1a3d;
+    --accent:#a5a0ff; --accent2:#f0abfc; --accent-bg:#2b2850; --on-accent:#16123a;
+    --kun-body:#2c2b38; --kun-line:#ecebf5; --dot:rgba(165,160,255,.08); --hover:rgba(165,160,255,.07);
+    --card-shadow:0 1px 2px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
     --err:#ff8b82; --err-bg:#472323; --warn:#f2c26a; --warn-bg:#43341a; --warn-line:#c48e2b;
     --ok:#8ed19a; --ok-bg:#1f3728;
     --out:#1c1c1b; --lb:#1b2934; --nx:#26232f; --sun:#ff8b82; --sat:#8eb0ff;
@@ -33,12 +40,15 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
+body{background:radial-gradient(var(--dot) 1px,transparent 1.2px) 0 0/18px 18px,var(--bg);color:var(--text);font:14px/1.5 "M PLUS Rounded 1c",system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}
-button{background:var(--panel);border:1px solid var(--line2);border-radius:6px;padding:4px 10px;cursor:pointer;white-space:nowrap}
+button{background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:4px 11px;cursor:pointer;white-space:nowrap;transition:transform .12s,box-shadow .12s,background .12s,border-color .12s}
 button:hover{background:var(--panel2)}
+button:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 3px 8px rgba(30,30,80,.08)}
+button:active:not(:disabled){transform:translateY(0) scale(.97);box-shadow:none}
 button:disabled{opacity:.45;cursor:default}
-button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2));border-color:transparent;color:var(--on-accent);font-weight:700}
+button.primary:hover:not(:disabled){box-shadow:0 4px 14px color-mix(in srgb,var(--accent) 35%,transparent)}
 button.danger{color:var(--err);border-color:var(--err)}
 button.sm{font-size:12px;padding:2px 8px}
 input,select,textarea{background:var(--panel);border:1px solid var(--line2);border-radius:6px;padding:4px 8px;min-width:0}
@@ -280,8 +290,56 @@ body.chipdrag,body.chipdrag *{cursor:grabbing!important}
 #tip ul{margin:6px 0 0;padding-left:16px}
 #tip li.error{color:var(--err)} #tip li.warn{color:var(--warn)}
 #tip .okt{color:var(--ok);margin-top:4px}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--text);color:var(--bg);padding:8px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:80;max-width:90vw}
-#toast.on{opacity:1}
+#toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,12px);background:var(--panel);color:var(--text);border:1px solid var(--line);box-shadow:var(--shadow);padding:6px 16px 6px 8px;border-radius:999px;font-size:13px;opacity:0;transition:opacity .2s,transform .25s cubic-bezier(.2,1.4,.4,1);pointer-events:none;z-index:80;max-width:90vw;display:flex;align-items:center;gap:8px}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#toast svg{width:26px;height:26px;flex:none}
+
+/* ===== 見た目の仕上げと演出 ===== */
+#app::before{content:"";flex:none;height:3px;background:linear-gradient(90deg,#5046e5,#d946ef 55%,#f97316)}
+.brand{font-weight:800;font-size:16px;letter-spacing:.02em;background:linear-gradient(90deg,var(--accent),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.kun-btn{width:40px;height:40px;padding:0;border:0;background:none;border-radius:12px;flex:none;cursor:pointer}
+.kun-btn:hover:not(:disabled){transform:rotate(-8deg) scale(1.08);box-shadow:none;background:none}
+.kun-btn svg{width:40px;height:40px;display:block;overflow:visible}
+.kun-btn.jump{animation:kunJump .7s cubic-bezier(.3,1.6,.5,1)}
+.kun-btn.shake{animation:kunShake .5s}
+@keyframes kunJump{0%{transform:none}30%{transform:translateY(-12px) rotate(-8deg) scale(1.1)}60%{transform:scale(.95,1.05)}100%{transform:none}}
+@keyframes kunShake{0%,100%{transform:none}20%{transform:translateX(-4px) rotate(-6deg)}40%{transform:translateX(4px) rotate(6deg)}60%{transform:translateX(-3px)}80%{transform:translateX(3px)}}
+#kunBubble{position:fixed;z-index:75;max-width:300px;background:var(--panel);color:var(--text);border:1px solid var(--line2);border-radius:14px;box-shadow:var(--shadow);padding:8px 12px;font-size:13px;line-height:1.6;animation:pop .2s ease-out;pointer-events:none}
+#kunBubble::before{content:"";position:absolute;top:-7px;left:18px;width:12px;height:12px;background:var(--panel);border-left:1px solid var(--line2);border-top:1px solid var(--line2);transform:rotate(45deg)}
+#kunBubble .tip{display:block;margin-top:4px;font-size:12px;color:var(--text2)}
+@keyframes pop{from{opacity:0;transform:scale(.95) translateY(6px)}to{opacity:1;transform:none}}
+#modal .md,#pop{animation:pop .18s ease-out}
+.mc{box-shadow:var(--card-shadow);border-radius:14px;transition:transform .15s,box-shadow .15s}
+.mc:hover{transform:translateY(-1px);box-shadow:0 2px 4px rgba(20,20,60,.06),0 8px 22px rgba(20,20,60,.09)}
+.next{border-radius:14px;background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 8%,var(--panel)),color-mix(in srgb,var(--accent2) 8%,var(--panel)))}
+.stabs button.on{border-bottom:3px solid transparent;border-image:linear-gradient(90deg,var(--accent),var(--accent2)) 1}
+.ptab.on{background:linear-gradient(135deg,color-mix(in srgb,var(--accent) 14%,var(--panel)),color-mix(in srgb,var(--accent2) 14%,var(--panel)))}
+.chip.r-D{background:linear-gradient(135deg,hsl(var(--h) 72% calc(var(--dl) + 6%)),hsl(calc(var(--h) + 28) 70% calc(var(--dl) - 4%)));box-shadow:0 2px 6px hsl(var(--h) 60% 40% / .3)}
+.chip{transition:transform .12s,box-shadow .12s}
+.chip:hover{transform:translateY(-1px)}
+.chip.moving{transform:scale(1.05);box-shadow:0 6px 16px rgba(0,0,0,.2)}
+.cell.today .ch .d{background:linear-gradient(135deg,var(--accent),var(--accent2))}
+.cell:hover{box-shadow:inset 0 0 0 999px var(--hover)}
+.cell.cand-ok{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--ok) 10%,transparent)}
+.cell.cand-tri{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--warn-line) 11%,transparent)}
+.cell.cand-x{box-shadow:inset 0 0 0 999px color-mix(in srgb,var(--err) 7%,transparent)}
+.cand{animation:pop .2s ease-out}
+.tag.lock{color:#d1342f;border:2px solid #d1342f;border-radius:50%;width:30px;height:30px;padding:0;display:inline-grid;place-items:center;font-weight:800;font-size:11px;line-height:1;transform:rotate(-12deg);background:color-mix(in srgb,#d1342f 7%,transparent)}
+.tag.lock.stamp-in{animation:stamp .5s cubic-bezier(.2,1.6,.4,1)}
+@keyframes stamp{0%{transform:rotate(-30deg) scale(2.6);opacity:0}60%{transform:rotate(-8deg) scale(.9);opacity:1}100%{transform:rotate(-12deg) scale(1)}}
+.chip.r-D.locked small{background:#d1342f;color:#fff;border-radius:50%;width:15px;height:15px;display:inline-grid;place-items:center;font-size:10px;line-height:1;opacity:1}
+.confetti{position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:90}
+#gavel{position:fixed;inset:0;z-index:85;display:grid;place-items:center;pointer-events:none;background:radial-gradient(circle,transparent 30%,rgba(20,15,60,.16))}
+#gavel[hidden]{display:none}
+#gavel .gbox{position:relative;width:220px;height:220px}
+#gavel svg{width:220px;height:220px;overflow:visible}
+#gavel .gv{transform-origin:104px 62px;animation:gavelHit .7s cubic-bezier(.5,0,.3,1) both}
+#gavel .kan{position:absolute;left:50%;top:-4px;font-weight:800;font-size:46px;color:#d1342f;text-shadow:0 2px 0 #fff,0 6px 18px rgba(0,0,0,.2);white-space:nowrap;animation:kan 1s .22s both}
+@keyframes gavelHit{0%{transform:rotate(50deg)}38%{transform:rotate(-7deg)}55%{transform:rotate(-2deg)}100%{transform:rotate(-4deg)}}
+@keyframes kan{0%{opacity:0;transform:translateX(-50%) scale(.4)}25%{opacity:1;transform:translateX(-50%) scale(1.25)}45%{transform:translateX(-50%) scale(1)}80%{opacity:1;transform:translateX(-50%)}100%{opacity:0;transform:translateX(-50%) translateY(-12px)}}
+.empty .kun-big{display:block;width:64px;height:64px;margin:0 auto 8px}
+.empty .kun-big svg{width:64px;height:64px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 
 #print{display:none}
 @media print{
@@ -305,6 +363,7 @@ body.chipdrag,body.chipdrag *{cursor:grabbing!important}
 <body>
 <div id="app">
   <header id="hdr">
+    <button id="kun" class="kun-btn" type="button" aria-label="調整くん（クリックで話しかける）" title="調整くん"></button>
     <div class="brand">代議員会日程調整くん</div>
     <div id="termLabel"></div>
     <div class="sp"></div>
@@ -328,6 +387,8 @@ body.chipdrag,body.chipdrag *{cursor:grabbing!important}
 <div id="pop" hidden></div>
 <div id="modal" hidden></div>
 <div id="tip" hidden></div>
+<div id="kunBubble" hidden></div>
+<div id="gavel" hidden></div>
 <div id="toast"></div>
 <div id="print"></div>
 <input type="file" id="fileIn" accept=".json,application/json" hidden>
@@ -672,11 +733,11 @@ function renderCloud() { const el = $('#cloudArea'); if (el) el.innerHTML = clou
 function mutate(fn) {
   if (ui.viewOnly) { toast('見るだけのモードです。編集するには「手元に保存して編集する」を押してください'); render(); return; }
   undoStack.push(JSON.stringify(T)); if (undoStack.length > 80) undoStack.shift();
-  fn(); save(); render();
+  fn(); save(); ui.fxArmed = true; render(); ui.fxArmed = false; // 自分の操作で状態が変わったときだけ演出する
 }
 function undo() {
   if (ui.viewOnly || !undoStack.length) { toast('戻せる操作がありません'); return; }
-  T = root.terms[root.current] = JSON.parse(undoStack.pop()); save(); render(); toast('元に戻しました');
+  T = root.terms[root.current] = JSON.parse(undoStack.pop()); save(); ui.fxArmed = true; render(); ui.fxArmed = false; toast('元に戻しました');
 }
 const planById = id => T.plans.find(p => p.id === id);
 const activePlan = () => planById(T.activePlanId) || T.plans[0];
@@ -865,6 +926,7 @@ function renderHeader() {
     : (ui.viewOnly ? '' : '<button data-act="confirm">この案で確定</button>');
   $('#btnUndo').disabled = ui.viewOnly || !undoStack.length;
   $('#cloudArea').innerHTML = cloudHTML();
+  renderKun();
 }
 function renderBanner() {
   $('#banner').innerHTML = ui.viewOnly ? `<div class="bn"><span>共有された日程を見ています（見るだけ）。</span><span class="sp"></span><button data-act="save-shared">手元に保存して編集する</button><button data-act="open-own">自分のデータを開く</button></div>`
@@ -926,7 +988,7 @@ function renderCalendar() {
   R.sorted.forEach((m, i) => {
     const c = R.chains.get(m.id), hue = HUES[i % HUES.length], l = mLabel(m), sh = mShort(m), sel = ui.sel === m.id;
     const chip = (d, role, label, title) => put(d, {o: i * 10 + ROLE_ORDER[role], h:
-      `<span class="chip r-${role}${sel ? ' sel' : ''}${warnSet.has(m.id + ':' + d) ? ' warn' : ''}${movingId === m.id ? ' moving' : ''}${role === 'D' && m.locked ? ' locked' : ''}" style="--h:${hue}" data-mid="${m.id}" data-role="${role}" title="${esc(role === 'D' && m.locked ? `${l} ${fmt(c.D)}（日付確定。動かすには右の一覧で確定を外す）` : title)}">${label}${role === 'D' ? (m.locked ? '<small>確定</small>' : '') : `<small>${esc(sh)}</small>`}</span>`});
+      `<span class="chip r-${role}${sel ? ' sel' : ''}${warnSet.has(m.id + ':' + d) ? ' warn' : ''}${movingId === m.id ? ' moving' : ''}${role === 'D' && m.locked ? ' locked' : ''}" style="--h:${hue}" data-mid="${m.id}" data-role="${role}" title="${esc(role === 'D' && m.locked ? `${l} ${fmt(c.D)}（日付確定。動かすには右の一覧で確定を外す）` : title)}">${label}${role === 'D' ? (m.locked ? '<small>確</small>' : '') : `<small>${esc(sh)}</small>`}</span>`});
     chip(c.D, 'D', esc(l), `${l} ${fmt(c.D)}（代表者会議も同じ日）\nドラッグで日程ごと動かせます`);
     chip(c.draft, 'draft', '第一稿', `${l}の議長団第一稿 ${fmt(c.draft)}`);
     chip(c.dist, 'dist', '議案配布', `${l}の議案配布 ${fmt(c.dist)}`);
@@ -971,7 +1033,7 @@ function renderCalendar() {
       if (rs && d >= rs[0] && d <= rs[1]) cls.push('rsel');
       if (ui.drag && ui.drag.moved && d === ui.drag.cur) cls.push('cur');
       let cand = '';
-      if (cands && wd === 6) { const c = cands.get(d); if (c) cand = `<span class="cand ${c.lvl}">${SYM[c.lvl]}</span>`; }
+      if (cands && wd === 6) { const c = cands.get(d); if (c) { cand = `<span class="cand ${c.lvl}">${SYM[c.lvl]}</span>`; cls.push('cand-' + c.lvl); } }
       const items = (byDay.get(d) || []).sort((p, q) => p.o - q.o).map(x => x.h).join('');
       const marks = (mk.get(d) || []).map(t => `<div class="mk" title="${esc(t)}">${esc(t)}</div>`).join('');
       h += `<div class="${cls.join(' ')}" data-dn="${d}"><div class="ch"><span class="d">${v.d === 1 || d === a ? `${v.m}/${v.d}` : v.d}</span>${hol ? `<span class="hn">${esc(hol)}</span>` : ''}${cand}</div>${marks}<div class="chips">${items}</div></div>`;
@@ -1023,7 +1085,7 @@ function meetingsTab() {
   const gl = R.issues.filter(x => !x.mids.length), gi = R.infos.filter(x => !x.mid);
   if (gl.length || gi.length) h += `<div class="glob">${gl.map(issueHTML).join('')}${gi.map(infoHTML).join('')}</div>`;
   h += '</div>';
-  if (!ms.length) h += '<div class="empty">カレンダーの日曜をクリックして、代議員会を置いてください。</div>';
+  if (!ms.length) h += `<div class="empty"><span class="kun-big">${kunSVG('ok')}</span>カレンダーの日曜をクリックして、代議員会を置いてください。</div>`;
   ms.forEach((m, i) => {
     if (i > 0) {
       const p = ms[i - 1], g = R.chains.get(m.id).D - R.chains.get(p.id).D;
@@ -1039,7 +1101,7 @@ function meetingCard(m, i) {
   const iss = R.issues.filter(x => x.at === m.id), inf = R.infos.filter(x => x.mid === m.id);
   const lvl = iss.some(x => x.level === 'error') ? 'error' : iss.length ? 'warn' : '';
   let h = `<div class="mc ${sel ? 'sel' : ''} ${lvl}" data-mid="${m.id}" style="--h:${hue}">`;
-  h += `<div class="mc-h"><span class="dot"></span><b>${esc(mLabel(m))}</b><span class="tag">${PRESETS[m.preset].short}</span>${isNextTerm(m) ? `<span class="tag nxt" title="次の期の最初の回。今期のうちに日程を決めておく">${T.term.number + 1}期</span>` : ''}${m.locked ? '<span class="tag lock" title="日付を確定した回。カレンダーで動かせない">日付確定</span>' : ''}<span class="dt">${fmt(c.D)}</span></div>`;
+  h += `<div class="mc-h"><span class="dot"></span><b>${esc(mLabel(m))}</b><span class="tag">${PRESETS[m.preset].short}</span>${isNextTerm(m) ? `<span class="tag nxt" title="次の期の最初の回。今期のうちに日程を決めておく">${T.term.number + 1}期</span>` : ''}${m.locked ? `<span class="tag lock${ui.stampId === m.id ? ' stamp-in' : ''}" title="日付確定（カレンダーで動かせない）">確定</span>` : ''}<span class="dt">${fmt(c.D)}</span></div>`;
   h += `<div class="mc-sub">部屋入り ${c.heyairi.length ? fmtRuns(c.heyairi) : 'なし'}・配布 ${fmt(c.dist)}</div>`;
   if (!iss.length && !inf.length) h += '<div class="iss okk">問題なし</div>';
   h += iss.map(issueHTML).join('') + inf.map(infoHTML).join('');
@@ -1149,7 +1211,143 @@ function askChoice(msg, choices) {
   });
 }
 let toastTimer = null;
-function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600); }
+function toast(msg, mood) {
+  const t = $('#toast'); mood = mood || (/できません|読めません|ありません/.test(msg) ? 'warn' : 'ok');
+  t.innerHTML = kunSVG(mood) + `<span>${esc(msg)}</span>`; t.classList.add('on');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 2600);
+}
+
+/* ===== 調整くん（マスコット）と演出 ===== */
+let kunSeq = 0;
+// mood: ok にっこり / warn 汗 / err 目が× / party お祝い / sleep 夜中 / dizzy 目が回る
+function kunSVG(mood = 'ok') {
+  const L = 'var(--kun-line)', B = 'var(--kun-body)', gid = 'kg' + (++kunSeq);
+  const dot = (x, y, r) => `<circle cx="${x}" cy="${y}" r="${r}" stroke="none" style="fill:${L}"/>`;
+  const happyEyes = '<path d="M14 28q3-4 6 0M28 28q3-4 6 0" fill="none" stroke-linecap="round"/>';
+  const eye = {ok: happyEyes, party: happyEyes, warn: dot(17, 28, 2.2) + dot(31, 28, 2.2),
+    err: '<path d="M14.5 25.5l5 5M19.5 25.5l-5 5M28.5 25.5l5 5M33.5 25.5l-5 5" stroke-linecap="round"/>',
+    sleep: '<path d="M14 29h6M28 29h6" stroke-linecap="round"/>',
+    dizzy: '<path d="M14 28a3 3 0 1 0 6 0a2 2 0 1 0-4 0M28 28a3 3 0 1 0 6 0a2 2 0 1 0-4 0" fill="none" stroke-width="1.8"/>'}[mood];
+  const wavy = '<path d="M18 35q3-2 6 0t6 0" fill="none" stroke-width="2.2" stroke-linecap="round"/>';
+  const mouth = {ok: '<path d="M19 33q5 5 10 0" fill="none" stroke-linecap="round"/>', warn: wavy, dizzy: wavy,
+    err: `<ellipse cx="24" cy="35.5" rx="3.2" ry="3.6" stroke="none" style="fill:${L}"/>`,
+    party: '<path d="M17.5 32.5q6.5 8 13 0z" stroke-width="2" stroke-linejoin="round" style="fill:#ff6b8b"/>',
+    sleep: dot(24, 35, 1.6)}[mood];
+  const extra = {
+    warn: '<path d="M38.5 19q3 4.5 0 6.5q-3-2 0-6.5z" stroke="none" style="fill:#5dade2"/>',
+    err: '<path d="M41.5 21l3-2.5M42.5 26h3.5M6.5 21l-3-2.5" stroke="#e74c3c" stroke-width="2" stroke-linecap="round"/>',
+    party: '<circle cx="2" cy="16" r="1.8" stroke="none" style="fill:#f59e0b"/><circle cx="46" cy="12" r="1.8" stroke="none" style="fill:#22c55e"/><rect x="43" y="30" width="3.4" height="3.4" stroke="none" style="fill:#d946ef" transform="rotate(20 44.7 31.7)"/>',
+    sleep: '<text x="39" y="6" font-size="9" font-weight="800" stroke="none" style="fill:var(--accent)">z</text><text x="45" y="0" font-size="6" font-weight="800" stroke="none" style="fill:var(--accent)">z</text>',
+  }[mood] || '';
+  const cheeks = mood === 'ok' || mood === 'party' ? '<circle cx="11.5" cy="32.5" r="2.6" stroke="none" opacity=".55" style="fill:#ff8fab"/><circle cx="36.5" cy="32.5" r="2.6" stroke="none" opacity=".55" style="fill:#ff8fab"/>' : '';
+  return `<svg viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="${gid}" x1="0" x2="1"><stop offset="0" stop-color="#5046e5"/><stop offset="1" stop-color="#d946ef"/></linearGradient></defs><g style="stroke:${L}" stroke-width="2.4"><rect x="5" y="8" width="38" height="36" rx="10" style="fill:${B}"/><path d="M5 18a10 10 0 0 1 10-10h18a10 10 0 0 1 10 10z" style="fill:url(#${gid})"/><rect x="13" y="3" width="4.5" height="9" rx="2.25" style="fill:${B}"/><rect x="30.5" y="3" width="4.5" height="9" rx="2.25" style="fill:${B}"/>${cheeks}${eye}${mouth}${extra}</g></svg>`;
+}
+const KUN_TIPS = [
+  '代議員会のあいだは最低2週間、できれば3週間あけよう',
+  '部屋入り報告は木曜配布が目標。金曜の午前になりがちだけどね',
+  '3月に2回やるなら、荒れない議案にしておこう。追いコン期だからね',
+  '長期休暇中の回は、12月末までにビラか棟吊看板で情宣！',
+  '1月定例の前は成人式。1・2年目がいなくなるよ',
+  '10月は早めの週がおすすめ。寮祭とぶつかりやすい',
+  '監査の承認は、選挙の公示より前に！',
+  '日程を変えるなら、1か月前までに全寮へ周知しよう',
+  '部屋入りから代議員会までは、同じ年度に収めよう',
+  '6月・12月定例は3・4週目がいい感じ',
+  '〇執の人は日程に詳しくないことが多い。教えてあげてね',
+  '議案が多い回は、第一稿を早めると楽になるよ',
+];
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const issueCounts = () => ({e: R.issues.filter(x => x.level === 'error').length, w: R.issues.filter(x => x.level === 'warn').length});
+function baseMood() {
+  const {e, w} = issueCounts(); if (e) return 'err'; if (w) return 'warn';
+  const h = new Date().getHours(); return h >= 1 && h < 5 ? 'sleep' : 'ok';
+}
+function renderKun() {
+  const btn = $('#kun'); if (!btn || !R) return;
+  const base = baseMood(), ov = ui.kunOv && Date.now() < ui.kunOv.until ? ui.kunOv.mood : null, mood = ov || base;
+  if (btn.dataset.mood !== mood) { btn.dataset.mood = mood; btn.innerHTML = kunSVG(mood); }
+  if (ui.drag && ui.drag.moved) return; // ドラッグ中は表情だけ変える
+  const prev = ui.lastMood; ui.lastMood = base;
+  if (!ui.fxArmed || !prev || prev === base) return;
+  if (base === 'ok' && (prev === 'warn' || prev === 'err')) celebrate('問題ゼロ！いい日程だね');
+  else if (base === 'err') kunAnim('shake');
+}
+function kunOverride(mood, ms) { ui.kunOv = {mood, until: Date.now() + ms}; renderKun(); setTimeout(renderKun, ms + 30); }
+function kunAnim(cls) { const b = $('#kun'); b.classList.remove('jump', 'shake'); void b.offsetWidth; b.classList.add(cls); setTimeout(() => b.classList.remove(cls), 800); }
+let bubbleTimer = null;
+function kunSay(text, tip) {
+  const b = $('#kunBubble'), r = $('#kun').getBoundingClientRect();
+  b.innerHTML = esc(text) + (tip ? `<span class="tip">${esc(tip)}</span>` : '');
+  b.style.left = Math.max(8, r.left - 4) + 'px'; b.style.top = (r.bottom + 10) + 'px';
+  b.hidden = false; b.style.animation = 'none'; void b.offsetWidth; b.style.animation = '';
+  clearTimeout(bubbleTimer); bubbleTimer = setTimeout(() => { b.hidden = true; }, 5500);
+}
+let kunClicks = 0, kunClickReset = null;
+function onKunClick() {
+  kunClicks++; clearTimeout(kunClickReset); kunClickReset = setTimeout(() => { kunClicks = 0; }, 2500);
+  if (kunClicks >= 7) { kunClicks = 0; kunOverride('dizzy', 3500); kunAnim('shake'); kunSay('め、目が回る〜〜'); return; }
+  const {e, w} = issueCounts(), mood = baseMood(), tip = '豆知識：' + KUN_TIPS[Math.floor(Math.random() * KUN_TIPS.length)];
+  if (mood === 'err') kunSay(`エラーが${e}つあるよ…赤いところを見てみて`, tip);
+  else if (mood === 'warn') kunSay(`注意が${w}つ。気にしすぎなくていいけど、一応ね`, tip);
+  else if (mood === 'sleep') kunSay('zzz… 夜ふかしは議案の敵だよ', tip);
+  else kunSay(['問題なし！いい日程だね', 'カンペキ。さすが議長', 'このまま〇執に見せちゃおう'][Math.floor(Math.random() * 3)], tip);
+  kunAnim('jump');
+}
+function celebrate(msg) { fxConfetti(); kunOverride('party', 2600); kunAnim('jump'); kunSay(msg); }
+function fxConfetti(o = {}) {
+  if (prefs.confetti === false || reducedMotion()) return;
+  const c = document.createElement('canvas'); c.className = 'confetti'; document.body.appendChild(c);
+  const W = innerWidth, H = innerHeight, dpr = devicePixelRatio || 1; c.width = W * dpr; c.height = H * dpr;
+  const ctx = c.getContext('2d'); ctx.scale(dpr, dpr);
+  const x0 = o.x ?? W / 2, y0 = o.y ?? H * 0.35, n = o.n ?? 140, power = o.power ?? 11, life = o.life ?? 1900;
+  const ps = Array.from({length: n}, () => {
+    const a = Math.random() * Math.PI * 2, s = power * (0.35 + Math.random() * 0.75);
+    return {x: x0, y: y0, vx: Math.cos(a) * s, vy: Math.sin(a) * s - power * 0.45, r: Math.random() * 6, vr: (Math.random() - 0.5) * 0.35,
+      w: 5 + Math.random() * 6, h: 3 + Math.random() * 4, col: `hsl(${HUES[Math.floor(Math.random() * HUES.length)]} 85% 60%)`};
+  });
+  const t0 = performance.now();
+  const tick = t => {
+    const el = t - t0; ctx.clearRect(0, 0, W, H); ctx.globalAlpha = Math.max(0, 1 - el / life);
+    ps.forEach(p => { p.vy += 0.28; p.vx *= 0.985; p.x += p.vx; p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.col; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h); ctx.restore(); });
+    if (el < life) requestAnimationFrame(tick); else c.remove();
+  };
+  requestAnimationFrame(tick);
+}
+function gavelStrike() {
+  playGavel();
+  if (reducedMotion()) return;
+  const g = $('#gavel');
+  g.innerHTML = `<div class="gbox"><svg viewBox="0 0 120 120" aria-hidden="true"><ellipse cx="44" cy="112" rx="36" ry="5" fill="rgba(0,0,0,.18)"/><rect x="12" y="92" width="64" height="16" rx="7" fill="#7b4a2e"/><rect x="12" y="92" width="64" height="5" rx="2.5" fill="#9a6340"/><g class="gv"><rect x="40" y="58" width="68" height="8" rx="4" fill="#b07448"/><rect x="22" y="40" width="28" height="46" rx="7" fill="#8d5233"/><rect x="22" y="48" width="28" height="5" fill="#d4a373"/><rect x="22" y="73" width="28" height="5" fill="#d4a373"/></g></svg><div class="kan">カンッ！</div></div>`;
+  g.hidden = false;
+  setTimeout(() => { fxConfetti({y: innerHeight * 0.5, n: 160}); kunOverride('party', 3000); kunAnim('jump'); }, 260);
+  setTimeout(() => { g.hidden = true; g.innerHTML = ''; }, 1350);
+}
+let audioCtx = null;
+function sfx(build) {
+  if (prefs.sound === false) return;
+  try { audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)(); build(audioCtx, audioCtx.currentTime); } catch (e) {}
+}
+function playGavel() { // 木槌の「カンッ」：低い打撃音と短いノイズ
+  sfx((a, now) => {
+    const t = now + 0.26, o = a.createOscillator(), g = a.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(330, t); o.frequency.exponentialRampToValueAtTime(90, t + 0.14);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.55, t + 0.004); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.22);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + 0.25);
+    const len = Math.floor(a.sampleRate * 0.04), buf = a.createBuffer(1, len, a.sampleRate), d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+    const src = a.createBufferSource(), f = a.createBiquadFilter(), ng = a.createGain();
+    f.type = 'bandpass'; f.frequency.value = 1900; ng.gain.value = 0.7; src.buffer = buf; src.connect(f).connect(ng).connect(a.destination); src.start(t);
+  });
+}
+function playPon() { // ハンコの「ポン」
+  sfx((a, t) => {
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = 'sine'; o.frequency.setValueAtTime(640, t); o.frequency.exponentialRampToValueAtTime(260, t + 0.12);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.35, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+    o.connect(g).connect(a.destination); o.start(t); o.stop(t + 0.2);
+  });
+}
 
 function openCellPop(a, b, x, y) {
   const s = Math.min(a, b), e = Math.max(a, b), single = s === e, mo = dnYmd(s).m;
@@ -1308,7 +1506,7 @@ function markRange() {
 async function confirmPlan() {
   const p = activePlan();
   const ok = await askConfirm(`「${p.name}」の日程（${p.meetings.length}回）を確定します。\n確定したあとに日を動かすと、1か月前までに全寮へ周知が必要な変更として扱います。`, '確定する');
-  if (ok) mutate(() => { T.confirmed = {planId: p.id, at: toStr(TODAY), meetings: sortMs(p.meetings).map(m => ({id: m.id, label: mLabel(m), date: m.date}))}; });
+  if (ok) { mutate(() => { T.confirmed = {planId: p.id, at: toStr(TODAY), meetings: sortMs(p.meetings).map(m => ({id: m.id, label: mLabel(m), date: m.date}))}; }); gavelStrike(); }
 }
 async function unconfirm() { const ok = await askConfirm('確定を取り消します。変更の周知期限の確認もしなくなります。', '取り消す', true); if (ok) mutate(() => { T.confirmed = null; }); }
 function jumpFirstIssue(lv) {
@@ -1386,12 +1584,15 @@ function startChipDrag(e, chip) {
     window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', cancel);
     document.body.classList.remove('dragging', 'chipdrag'); stopAutoScroll(); hideTip(); dragOff = null;
   };
-  const up = () => {
-    end(); const d = ui.drag; ui.drag = null; if (!d) return;
-    if (!d.moved) { selectMeeting(mid, false); return; }
+  const up = ev => {
+    end(); const d = ui.drag; if (!d) return;
+    if (!d.moved) { ui.drag = null; selectMeeting(mid, false); return; }
     const delta = d.cur - d.from;
+    const placed = d.role === 'D' && d.cands ? candAt(d.cur) : null; // 置いた日曜の ○△×
+    ui.drag = null;
     if (!delta) { render(); return; }
     ui.sel = mid; mutate(() => applyMove(activePlan(), d.mid, d.role, delta));
+    if (placed && placed.lvl === 'ok') fxConfetti({x: ev.clientX, y: ev.clientY, n: 28, power: 5, life: 900});
   };
   const cancel = () => { end(); ui.drag = null; render(); };
   dragOff = cancel;
@@ -1514,6 +1715,9 @@ function openSettings() {
   const num = (id, v, min, max) => `<input type="number" id="${id}" value="${v}" min="${min}" max="${max}" ${dis}>`;
   const sunStart = weekStart() === 6;
   openModal(`<h3>設定</h3>
+    <section><h4>演出</h4>
+      <div class="opts"><label><input type="checkbox" id="fxSound" ${prefs.sound !== false ? 'checked' : ''}> 効果音（確定の木槌、ハンコ）</label><label><input type="checkbox" id="fxConf" ${prefs.confetti !== false ? 'checked' : ''}> 紙吹雪</label></div>
+      <p class="muted">この設定もブラウザごとに保存されます。パソコンで「動きを減らす」にしていると、演出は出ません。</p></section>
     <section><h4>カレンダーの週の始まり</h4>
       <div class="opts"><label><input type="radio" name="ws" value="mon" ${sunStart ? '' : 'checked'}> 月曜始まり</label><label><input type="radio" name="ws" value="sun" ${sunStart ? 'checked' : ''}> 日曜始まり</label></div>
       <p class="muted">月曜始まりだと、部屋入り（木〜日）が1行に収まり、次の行の日曜に代議員会が来ます。この設定はこのブラウザだけに保存され、共有したデータには入りません。</p></section>
@@ -1534,6 +1738,8 @@ function openSettings() {
     <div class="btns"><button data-x="close">閉じる</button></div>`, box => {
     const bindNum = (id, key, min, max) => { const el = box.querySelector('#' + id); el && el.addEventListener('change', () => { const v = Math.round(+el.value); if (!(v >= min && v <= max)) { el.value = T.settings[key]; toast(`${min}〜${max}の数にしてください`); return; } mutate(() => { T.settings[key] = v; }); }); };
     box.querySelectorAll('input[name="ws"]').forEach(r => r.addEventListener('change', () => setWeekStart(r.value)));
+    box.querySelector('#fxSound').addEventListener('change', e => { prefs.sound = e.target.checked; savePrefs(); if (e.target.checked) playPon(); });
+    box.querySelector('#fxConf').addEventListener('change', e => { prefs.confetti = e.target.checked; savePrefs(); });
     bindNum('sDraft', 'draftDays', 1, 30); bindNum('sDist', 'distDays', 0, 14); bindNum('sMin', 'minSpan', 7, 42); bindNum('sRec', 'recSpan', 7, 56); bindNum('sHeavy', 'heavyScore', 2, 40);
     box.querySelectorAll('[data-term]').forEach(b => b.addEventListener('click', () => { closeModal(); switchTerm(+b.dataset.term); }));
     box.querySelector('#stTermGo').addEventListener('click', () => { const n = Math.round(+box.querySelector('#stTerm').value); if (!(n >= 200 && n <= 600)) { toast('期の番号を入れてください'); return; } closeModal(); switchTerm(n); });
@@ -1622,6 +1828,9 @@ function openHelp() {
       <li>上の「案を増やす」で案を複製して、別の日程を試せます。「比べる案」を選ぶと、その案が点線で重なります。</li>
       <li>「共有・印刷」から LINE用テキスト、印刷（PDF）、ファイル書き出しができます。</li>
       <li>決まったら「この案で確定」。確定後に日を動かすと、1か月前までの周知期限を出します。</li></ul></section>
+    <section><h4>調整くん</h4><ul>
+      <li>左上の調整くんは、日程の状態で表情が変わります（にっこり＝問題なし、汗＝注意あり、目が×＝エラーあり）。</li>
+      <li>クリックすると、いまの状態と引き継ぎの豆知識を教えてくれます。注意とエラーが全部消えると喜びます。</li></ul></section>
     <section><h4>保存とログイン</h4><ul>
       <li>データはこのブラウザに自動で保存されます。Ctrl+Z で元に戻せます。</li>
       <li>右上の「Googleでログイン」でログインすると、データがクラウドにも保存され、どのブラウザ・パソコンからでも同じ日程を見られます。別のブラウザで変えた内容も自動で反映されます。読み書きできるのはログインした本人だけです。</li>
@@ -1653,7 +1862,13 @@ function doAct(act, t, e) {
     case 'del-meeting': delMeeting(t.closest('[data-mid]').dataset.mid); break;
     case 'reset-chain': { const id = t.closest('[data-mid]').dataset.mid; mutate(() => { findM(id).overrides = {}; }); break; }
     case 'toggle-h': toggleHeyairi(t.closest('[data-mid]').dataset.mid, +t.dataset.dn); break;
-    case 'toggle-lock': { const id = t.closest('[data-mid]').dataset.mid; mutate(() => { const m = findM(id); m.locked = !m.locked; }); toast(findM(id).locked ? `${mLabel(findM(id))}の日付を確定しました` : '日付の確定を外しました'); break; }
+    case 'toggle-lock': {
+      const id = t.closest('[data-mid]').dataset.mid, willLock = !findM(id).locked;
+      if (willLock) { ui.stampId = id; setTimeout(() => { ui.stampId = null; }, 700); playPon(); }
+      mutate(() => { const m = findM(id); m.locked = willLock; });
+      toast(willLock ? `${mLabel(findM(id))}の日付を確定しました` : '日付の確定を外しました');
+      break;
+    }
     case 'add-event': {
       const d = Math.max(TODAY, toDn(T.term.start)), id = uid();
       mutate(() => T.events.push({id, title: 'テスト期間', cat: 'test', start: toStr(d), end: toStr(d + 6)}));
@@ -1678,6 +1893,7 @@ function bindEvents() {
     scrollToDn(a + Math.floor((e.clientX - r.left) / r.width * (b - a + 1)) - 7);
   });
   $('#cal').addEventListener('pointerdown', onCalDown);
+  $('#kun').addEventListener('click', onKunClick);
   bindSplitter(); applySplit();
   const side = $('#side');
   side.addEventListener('click', e => {
