@@ -6,7 +6,8 @@
 <title>代議員会日程調整くん</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<!-- 丸ゴシックはタイトルと「カンッ！」だけに使うので、その文字だけ読み込む -->
+<link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@800&display=swap&text=%E4%BB%A3%E8%AD%B0%E5%93%A1%E4%BC%9A%E6%97%A5%E7%A8%8B%E8%AA%BF%E6%95%B4%E3%81%8F%E3%82%93%E3%82%AB%E3%83%B3%E3%83%83%EF%BC%81" rel="stylesheet">
 <style>
 :root{
   --bg:#f4f4f1; --panel:#ffffff; --panel2:#f8f8f6; --line:#e1e0da; --line2:#c8c6bd;
@@ -40,7 +41,9 @@
 }
 *{box-sizing:border-box}
 html,body{margin:0;height:100%}
-body{background:radial-gradient(var(--dot) 1px,transparent 1.2px) 0 0/18px 18px,var(--bg);color:var(--text);font:14px/1.5 "M PLUS Rounded 1c",system-ui,-apple-system,"Segoe UI","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
+body{background:radial-gradient(var(--dot) 1px,transparent 1.2px) 0 0/18px 18px,var(--bg);color:var(--text);font:14px/1.5 "BIZ UDPGothic","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Meiryo",system-ui,-apple-system,"Segoe UI",sans-serif}
+/* 日本語のウェブフォントは Windows の小さい文字でギザギザになるので、本文はパソコンに入っているフォントを使う */
+.brand,#gavel .kan{font-family:"M PLUS Rounded 1c","BIZ UDPGothic","Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif}
 button,input,select,textarea{font:inherit;color:inherit}
 button{background:var(--panel);border:1px solid var(--line2);border-radius:9px;padding:4px 11px;cursor:pointer;white-space:nowrap;transition:transform .12s,box-shadow .12s,background .12s,border-color .12s}
 button:hover{background:var(--panel2)}
