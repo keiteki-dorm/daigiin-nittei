@@ -181,6 +181,11 @@ body.chipdrag,body.chipdrag *{cursor:grabbing!important}
 .mc-h .dt{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:600}
 .tag{font-size:11px;color:var(--text2);border:1px solid var(--line2);border-radius:4px;padding:0 5px;line-height:16px}
 .tag.nxt{color:var(--accent);border-color:var(--accent)}
+.tag.lock{color:var(--ok);border-color:var(--ok)}
+.row-in{display:flex;gap:6px;align-items:center;min-width:0}
+.row-in input{flex:1}
+.chip.r-D.locked{cursor:pointer;outline:2px solid hsl(var(--h) 62% var(--dl));outline-offset:1px}
+.chip.r-D.locked small{opacity:1;font-weight:700}
 .mc-sub{font-size:12px;color:var(--text2);margin-top:2px}
 .memo{font-size:12px;color:var(--text2);margin-top:4px;white-space:pre-wrap;border-left:3px solid var(--line2);padding-left:6px}
 .iss{font-size:12px;margin-top:4px;display:flex;gap:6px;line-height:1.45}
@@ -379,7 +384,7 @@ const CATS = {
   ryosai:    {name: '寮祭・観楓会', hue: 28, stages: ['heyairi'], basis: '新歓、寮祭'},
   oikon:     {name: '追いコン', hue: 330, stages: ['heyairi', 'meeting'], basis: '代議員会間のスパン（追いコン期）'},
   heyagae:   {name: '部屋替え', hue: 48, stages: ['heyairi', 'meeting'], basis: '議案の理想的な時期（12月定例のコメント）'},
-  election:  {name: '選挙', hue: 220, stages: [], basis: '年目コンパおよび選挙'},
+  election:  {name: '選挙（公示の日から）', hue: 220, stages: [], basis: '年目コンパおよび選挙'},
   compa:     {name: '年目コンパ', hue: 180, stages: [], basis: '年目コンパおよび選挙（被ってもよい）'},
   longbreak: {name: '長期休暇', hue: 205, stages: [], basis: '長期休暇'},
   other:     {name: 'その他（重なると注意）', hue: 60, stages: ['heyairi', 'meeting'], basis: '予定との重なり'},
@@ -398,6 +403,7 @@ const RULES = [
   {key: 'longbreak', level: 'error', name: '長期休暇中の回の情宣期限（6月末・12月末）を過ぎている', basis: '長期休暇'},
   {key: 'henko', level: 'error', name: '確定後の変更で、1か月前の周知期限を過ぎている', basis: '代議員会日程の情宣'},
   {key: 'order', level: 'error', name: '日程の順番が崩れている', basis: '基本的な代議員会に関わる日程'},
+  {key: 'fiscal', level: 'error', name: '部屋入りから代議員会までが年度（4月1日）をまたぐ', basis: '部屋入りから代議員会までは同じ年度に収める（328期議長の決まり）'},
   {key: 'span-rec', level: 'warn', name: '定例どうしの間隔が3週間未満', note: '臨時が絡む間隔は、基本方針・総括の時期として除く', basis: '代議員会間のスパン'},
   {key: 'sunday', level: 'warn', name: '代議員会が日曜でない', basis: '基本的な代議員会に関わる日程'},
   {key: 'first-week', level: 'warn', name: '6月・12月定例が3・4週目でない', basis: '議案の理想的な時期'},
@@ -419,6 +425,8 @@ function termInfo(num) {
   return {number: num, start: toStr(dnOf(y, m, 1)), end: toStr(lastDayOfMonth(y, m + 5))};
 }
 function guessTerm() { const t = todayDn(); for (let n = 300; n < 500; n++) if (toDn(termInfo(n).start) >= t - 31) return n; return 328; }
+// 部屋入り初日（D + hsOff）から代議員会 D までの間に4月1日があるか
+function crossesFiscal(D, hsOff) { const a1 = dnOf(dnYmd(D).y, 4, 1); return D + hsOff < a1 && D >= a1; }
 function defaultPreset(month, kind) { return month === 4 || (month === 11 && kind === '定例') ? 'weekday' : (month === 9 || month === 10) ? 'long' : 'normal'; }
 function templateAgenda(n) {
   const p = n - 1, pp = n - 2, nx = n + 1;
@@ -444,15 +452,17 @@ function templateMeetings(num) {
   const {y, m} = dnYmd(toDn(termInfo(num).start));
   const nth = (k, n) => { const i = y * 12 + (m - 1) + k; return nthWeekday(Math.floor(i / 12), i % 12 + 1, 6, n); };
   const A = templateAgenda(num);
+  // 最初の月の定例は4週目。4月定例は部屋入りが年度をまたがない最初の日曜（下の while）。
+  // 最後の月の定例は、選挙の公示に間に合うよう1週目（tight：前の定例から2週間でもよい）
   const spec = [
-    {kind: '定例', t: nth(0, 3), ag: A.first_teirei},
+    {kind: '定例', t: nth(0, 4), ag: A.first_teirei},
     {kind: '臨時', t: nth(1, 3), ag: A.second_rinji},
     {kind: '定例', after: 14, ag: A.second_teirei},
     {kind: '定例', t: nth(2, 3)},
     {kind: '定例', t: nth(3, 2)},
     {kind: '定例', t: nth(4, 2)},
-    {kind: '定例', t: nth(5, 2), ag: A.last_teirei},
-    {kind: '臨時', after: 14, ag: A.last_rinji},
+    {kind: '定例', t: nth(5, 1), tight: true, ag: A.last_teirei},
+    {kind: '臨時', t: nth(5, 4), ag: A.last_rinji},
   ];
   const out = []; let prev = null;
   spec.forEach(sp => {
@@ -460,15 +470,18 @@ function templateMeetings(num) {
     if (sp.after) d = prev + sp.after;
     else if (prev == null) d = sp.t;
     else {
-      const need = prev + ((sp.kind === '臨時' || out[out.length - 1].kind === '臨時') ? 14 : 21);
+      const need = prev + ((sp.tight || sp.kind === '臨時' || out[out.length - 1].kind === '臨時') ? 14 : 21);
       d = Math.max(sp.t, need); d += (6 - dow(d) + 7) % 7;
     }
-    const pm = prev == null ? null : dnYmd(prev).m, dm = dnYmd(d).m;
-    const name = sp.after && pm !== dm ? `${pm}月${sp.kind}` : '';
+    const pm = prev == null ? null : dnYmd(prev).m;
+    const preset = defaultPreset(sp.after && pm !== dnYmd(d).m ? pm : dnYmd(d).m, sp.kind);
+    while (crossesFiscal(d, PRESETS[preset].heyairi[0])) d += 7;
+    const dm = dnYmd(d).m, name = sp.after && pm !== dm ? `${pm}月${sp.kind}` : '';
     prev = d;
-    out.push({id: uid(), kind: sp.kind, name, date: toStr(d), preset: defaultPreset(name ? pm : dm, sp.kind), overrides: {}, memo: '', agenda: mkAgenda(sp.ag)});
+    out.push({id: uid(), kind: sp.kind, name, date: toStr(d), preset, overrides: {}, memo: '', locked: false, agenda: mkAgenda(sp.ag)});
   });
   out.push(makeNextFirst(num, termInfo(num).end, prev));
+  if (num === 328) out[0].locked = true; // 328期の12月定例は 12/27 で確定済み
   return out;
 }
 function seedEvents(num) {
@@ -498,7 +511,7 @@ function migrate(t) {
   if (!t.plans.length) t.plans.push({id: uid(), name: '案A', memo: '', meetings: []});
   t.plans.forEach(p => { p.meetings = p.meetings || []; p.meetings.forEach(m => {
     m.overrides = m.overrides || {}; m.agenda = m.agenda || []; m.kind = m.kind === '臨時' ? '臨時' : '定例';
-    if (!PRESETS[m.preset]) m.preset = 'normal'; m.name = m.name || ''; m.memo = m.memo || ''; }); });
+    if (!PRESETS[m.preset]) m.preset = 'normal'; m.name = m.name || ''; m.memo = m.memo || ''; m.locked = !!m.locked; }); });
   if (!t.plans.some(p => p.id === t.activePlanId)) t.activePlanId = t.plans[0].id;
   if ((t.schema || 1) < 2) {
     // 次の期の最初の定例（6定・12定）を、まだない案に足す
@@ -609,6 +622,10 @@ function checkPlan(plan) {
       const hs = c.heyairi[0], he = c.heyairi[c.heyairi.length - 1];
       if (!(c.draft < c.dist && c.dist < hs && he < c.report && c.report <= c.rmeet && c.rmeet <= c.D))
         add('order', [m.id], `${l}の日程の順番が崩れている（第一稿→議案配布→部屋入り→報告→報告集会→代議員会の順にする）`);
+      if (crossesFiscal(c.D, hs - c.D)) {
+        const a1 = dnOf(dnYmd(c.D).y, 4, 1);
+        add('fiscal', [m.id], `${l}の部屋入り（${fmt(hs)}〜）から代議員会までが年度をまたぐ（部屋入りは${fmt(a1)}から）`, {dns: range(hs, a1 - 1)});
+      }
     }
     if (i > 0) {
       const p = ms[i - 1], g = c.D - C.get(p.id).D;
@@ -636,8 +653,10 @@ function checkPlan(plan) {
   const mar = ms.filter(m => ymOf(m).m === 3);
   if (mar.length >= 2) add('march', mar.map(m => m.id), `3月に${mar.length}回ある（追いコン期。荒れない議案にするか、1回を2月に回す）`, {at: mar[mar.length - 1].id});
   [4, 10].forEach(mo => {
-    const xs = ms.filter(m => ymOf(m).m === mo);
-    if (xs.length && ymOf(xs[0]).d > 15) add('early', [xs[0].id], `${L(xs[0])}が${ymOf(xs[0]).d}日。${mo === 4 ? '新歓' : '寮祭'}の時期なので、月の頭のほうがよい`);
+    const xs = ms.filter(m => ymOf(m).m === mo); if (!xs.length || ymOf(xs[0]).d <= 15) return;
+    const c0 = C.get(xs[0].id), hsOff = c0.heyairi.length ? c0.heyairi[0] - c0.D : -10;
+    if (mo === 4 && crossesFiscal(c0.D - 7, hsOff)) return; // 1週早めると年度をまたぐので、これが最も早い
+    add('early', [xs[0].id], `${L(xs[0])}が${ymOf(xs[0]).d}日。${mo === 4 ? '新歓' : '寮祭'}の時期なので、月の頭のほうがよい`);
   });
 
   // 今期の回（cur）だけで判定する。次の期の最初の回は、次の期の総論・決算を出す回として別に扱う
@@ -661,7 +680,7 @@ function checkPlan(plan) {
   });
   const el = T.events.filter(e => e.cat === 'election').sort((a, b) => a.start < b.start ? -1 : 1)[0];
   if (ai >= 0) {
-    if (el) { const es = toDn(el.start), D = C.get(cur[ai].id).D; if (D >= es) add('kansa', [cur[ai].id], `監査の承認（${L(cur[ai])} ${fmt(D)}）が選挙（${fmt(es)}）より後にある`); }
+    if (el) { const es = toDn(el.start), D = C.get(cur[ai].id).D; if (D >= es) add('kansa', [cur[ai].id], `監査の承認（${L(cur[ai])} ${fmt(D)}）が選挙の公示（${fmt(es)}）より後にある`); }
     else if (!off.has('kansa')) infos.push({msg: '「予定」に選挙を入れると、監査の承認が選挙に間に合うか確かめられます'});
   }
 
@@ -779,7 +798,7 @@ function renderCalendar() {
   R.sorted.forEach((m, i) => {
     const c = R.chains.get(m.id), hue = HUES[i % HUES.length], l = mLabel(m), sh = mShort(m), sel = ui.sel === m.id;
     const chip = (d, role, label, title) => put(d, {o: i * 10 + ROLE_ORDER[role], h:
-      `<span class="chip r-${role}${sel ? ' sel' : ''}${warnSet.has(m.id + ':' + d) ? ' warn' : ''}${movingId === m.id ? ' moving' : ''}" style="--h:${hue}" data-mid="${m.id}" data-role="${role}" title="${esc(title)}">${label}${role === 'D' ? '' : `<small>${esc(sh)}</small>`}</span>`});
+      `<span class="chip r-${role}${sel ? ' sel' : ''}${warnSet.has(m.id + ':' + d) ? ' warn' : ''}${movingId === m.id ? ' moving' : ''}${role === 'D' && m.locked ? ' locked' : ''}" style="--h:${hue}" data-mid="${m.id}" data-role="${role}" title="${esc(role === 'D' && m.locked ? `${l} ${fmt(c.D)}（日付確定。動かすには右の一覧で確定を外す）` : title)}">${label}${role === 'D' ? (m.locked ? '<small>確定</small>' : '') : `<small>${esc(sh)}</small>`}</span>`});
     chip(c.D, 'D', esc(l), `${l} ${fmt(c.D)}（代表者会議も同じ日）\nドラッグで日程ごと動かせます`);
     chip(c.draft, 'draft', '第一稿', `${l}の議長団第一稿 ${fmt(c.draft)}`);
     chip(c.dist, 'dist', '議案配布', `${l}の議案配布 ${fmt(c.dist)}`);
@@ -891,7 +910,7 @@ function meetingCard(m, i) {
   const iss = R.issues.filter(x => x.at === m.id), inf = R.infos.filter(x => x.mid === m.id);
   const lvl = iss.some(x => x.level === 'error') ? 'error' : iss.length ? 'warn' : '';
   let h = `<div class="mc ${sel ? 'sel' : ''} ${lvl}" data-mid="${m.id}" style="--h:${hue}">`;
-  h += `<div class="mc-h"><span class="dot"></span><b>${esc(mLabel(m))}</b><span class="tag">${PRESETS[m.preset].short}</span>${isNextTerm(m) ? `<span class="tag nxt" title="次の期の最初の回。今期のうちに日程を決めておく">${T.term.number + 1}期</span>` : ''}<span class="dt">${fmt(c.D)}</span></div>`;
+  h += `<div class="mc-h"><span class="dot"></span><b>${esc(mLabel(m))}</b><span class="tag">${PRESETS[m.preset].short}</span>${isNextTerm(m) ? `<span class="tag nxt" title="次の期の最初の回。今期のうちに日程を決めておく">${T.term.number + 1}期</span>` : ''}${m.locked ? '<span class="tag lock" title="日付を確定した回。カレンダーで動かせない">日付確定</span>' : ''}<span class="dt">${fmt(c.D)}</span></div>`;
   h += `<div class="mc-sub">部屋入り ${c.heyairi.length ? fmtRuns(c.heyairi) : 'なし'}・配布 ${fmt(c.dist)}</div>`;
   if (!iss.length && !inf.length) h += '<div class="iss okk">問題なし</div>';
   h += iss.map(issueHTML).join('') + inf.map(infoHTML).join('');
@@ -919,7 +938,7 @@ function detailHTML(m, c) {
   return `<div class="mc-detail">
     <div class="fg"><label>種別</label><select data-f="kind" ${dis}><option ${m.kind === '定例' ? 'selected' : ''}>定例</option><option ${m.kind === '臨時' ? 'selected' : ''}>臨時</option></select></div>
     <div class="fg"><label>呼び名</label><input data-f="name" value="${esc(m.name)}" placeholder="${esc(`${mMonth(m)}月${m.kind}`)}（自動）" ${dis}></div>
-    <div class="fg"><label>代議員会</label>${date('date', D)}</div>
+    <div class="fg"><label>代議員会</label><div class="row-in"><input type="date" data-f="date" value="${toStr(D)}" ${dis || (m.locked ? 'disabled' : '')}>${ui.viewOnly ? '' : `<button class="sm" data-act="toggle-lock">${m.locked ? '確定を外す' : 'この日付で確定'}</button>`}</div></div>
     <div class="fg"><label>型</label><select data-f="preset" ${dis}>${Object.entries(PRESETS).map(([k, p]) => `<option value="${k}" ${m.preset === k ? 'selected' : ''}>${p.name}</option>`).join('')}</select></div>
     <div class="fg"><label>議長団第一稿</label>${date('o-draft', c.draft)}</div>
     <div class="fg"><label>議案配布</label>${date('o-dist', c.dist)}</div>
@@ -942,7 +961,7 @@ function eventsTab() {
     <div class="evr2"><select data-ef="cat" ${dis}>${catOptions(ev.cat)}</select><input type="date" data-ef="start" value="${ev.start}" ${dis}><span>〜</span><input type="date" data-ef="end" value="${ev.end}" ${dis}></div>
   </div>`).join('');
   h += `<div class="legend"><div class="lg-h">種類ごとに、重なると注意を出す段階</div>${Object.values(CATS).map(c => `<div class="lg"><span class="evdot" style="--h:${c.hue};${c.sat != null ? `--es:${c.sat}%;` : ''}"></span><b>${esc(c.name)}</b><span>${c.stages.length ? c.stages.map(s => STAGE_NAMES[s]).join('・') : '表示のみ'}</span></div>`).join('')}
-    <p class="muted">選挙は、監査の承認（5月・11月定例）がそれより前にあるかを確かめるのに使います。</p></div>`;
+    <p class="muted">選挙は公示の日から入れてください。監査の承認（5月・11月定例）が公示より前にあるかを確かめます。</p></div>`;
   return h;
 }
 function rulesTab() {
@@ -1212,12 +1231,14 @@ function onCalDown(e) {
 function startChipDrag(e, chip) {
   e.preventDefault();
   const mid = chip.dataset.mid, role = chip.dataset.role, from = +chip.closest('[data-dn]').dataset.dn;
+  const lockedD = role === 'D' && !!(findM(mid) || {}).locked;
   ui.drag = {mid, role, from, cur: from, moved: false, x0: e.clientX, y0: e.clientY, cands: null, common: new Set()};
   const hit = (x, y) => { const v = cellAt(x, y); if (v != null && ui.drag && v !== ui.drag.cur) { ui.drag.cur = v; render(); } };
   const move = ev => {
     const d = ui.drag; if (!d) return;
     if (!d.moved) {
       if (Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) < 5 || ui.viewOnly) return;
+      if (lockedD) { if (!d.warned) { d.warned = true; toast('日付を確定した回です。動かすには右の一覧で「確定を外す」を押してください'); } return; }
       d.moved = true; document.body.classList.add('dragging', 'chipdrag');
       if (role === 'D') computeCands(d);
       render(); startAutoScroll((x, y) => { hit(x, y); showTip(x, y); });
@@ -1261,8 +1282,8 @@ function buildText(p, o) {
   r.sorted.forEach(m => {
     const c = r.chains.get(m.id);
     if (o.detail) {
-      lines.push('', `■${mLabel(m)}${nxtSuffix(m)}　${fmt(c.D)}`, `　議長団第一稿　${fmt(c.draft)}`, `　議案配布　${fmt(c.dist)}`, `　部屋入り　${c.heyairi.length ? fmtRuns(c.heyairi) : 'なし'}`, `　部屋入り報告　${fmt(c.report)}`, `　部屋入り報告集会　${fmt(c.rmeet)}`);
-    } else lines.push(`${mLabel(m)}${nxtSuffix(m)}　${fmt(c.D)}`);
+      lines.push('', `■${mLabel(m)}${nxtSuffix(m)}　${fmt(c.D)}${m.locked ? '（確定）' : ''}`, `　議長団第一稿　${fmt(c.draft)}`, `　議案配布　${fmt(c.dist)}`, `　部屋入り　${c.heyairi.length ? fmtRuns(c.heyairi) : 'なし'}`, `　部屋入り報告　${fmt(c.report)}`, `　部屋入り報告集会　${fmt(c.rmeet)}`);
+    } else lines.push(`${mLabel(m)}${nxtSuffix(m)}　${fmt(c.D)}${m.locked ? '（確定）' : ''}`);
     if (o.agenda && m.agenda.length) lines.push(`　議案：${m.agenda.map(a => a.title).join('、')}`);
     if (o.issues) {
       r.issues.filter(x => x.at === m.id).forEach(x => lines.push(`　${x.level === 'error' ? '※要対応' : '※注意'}：${x.msg}`));
@@ -1318,7 +1339,7 @@ function printHTML(p) {
   const r = checkPlan(p);
   const rows = r.sorted.map(m => {
     const c = r.chains.get(m.id), iss = r.issues.filter(x => x.at === m.id);
-    return `<tr><td><b>${esc(mLabel(m))}</b>${esc(nxtSuffix(m))}</td><td>${fmt(c.D)}</td><td>${fmt(c.draft)}</td><td>${fmt(c.dist)}</td><td>${c.heyairi.length ? fmtRuns(c.heyairi) : 'なし'}</td><td>${fmt(c.report)}</td><td>${fmt(c.rmeet)}</td><td>${m.agenda.map(a => esc(a.title)).join('<br>')}</td><td>${iss.map(x => `<div class="${x.level === 'error' ? 'e' : 'w'}">${esc(x.msg)}</div>`).join('')}${m.memo ? `<div>${esc(m.memo)}</div>` : ''}</td></tr>`;
+    return `<tr><td><b>${esc(mLabel(m))}</b>${esc(nxtSuffix(m))}</td><td>${fmt(c.D)}${m.locked ? '<br>（確定）' : ''}</td><td>${fmt(c.draft)}</td><td>${fmt(c.dist)}</td><td>${c.heyairi.length ? fmtRuns(c.heyairi) : 'なし'}</td><td>${fmt(c.report)}</td><td>${fmt(c.rmeet)}</td><td>${m.agenda.map(a => esc(a.title)).join('<br>')}</td><td>${iss.map(x => `<div class="${x.level === 'error' ? 'e' : 'w'}">${esc(x.msg)}</div>`).join('')}${m.memo ? `<div>${esc(m.memo)}</div>` : ''}</td></tr>`;
   }).join('');
   return `<h1>${T.term.number}期 代議員会日程（${esc(p.name)}）</h1><p class="pm">${fmtY(TODAY)} 作成${T.confirmed && T.confirmed.planId === p.id ? '・確定済み' : '・案'}${p.memo ? '・' + esc(p.memo) : ''}</p>
     <div class="ov">${overviewHTML(r, null, '')}</div>
@@ -1459,6 +1480,7 @@ function doAct(act, t, e) {
     case 'del-meeting': delMeeting(t.closest('[data-mid]').dataset.mid); break;
     case 'reset-chain': { const id = t.closest('[data-mid]').dataset.mid; mutate(() => { findM(id).overrides = {}; }); break; }
     case 'toggle-h': toggleHeyairi(t.closest('[data-mid]').dataset.mid, +t.dataset.dn); break;
+    case 'toggle-lock': { const id = t.closest('[data-mid]').dataset.mid; mutate(() => { const m = findM(id); m.locked = !m.locked; }); toast(findM(id).locked ? `${mLabel(findM(id))}の日付を確定しました` : '日付の確定を外しました'); break; }
     case 'add-event': {
       const d = Math.max(TODAY, toDn(T.term.start)), id = uid();
       mutate(() => T.events.push({id, title: 'テスト期間', cat: 'test', start: toStr(d), end: toStr(d + 6)}));
