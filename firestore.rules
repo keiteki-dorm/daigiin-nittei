@@ -3,8 +3,10 @@ rules_version = '2';
 // groups/{gid}：グループのデータ。メンバー表（roles）に Google アカウントのメールアドレスが載っている人だけが開ける
 //   閲覧（viewer）：読むだけ
 //   編集（editor）：日程のデータ（data）を書ける。メンバー表と名前は変えられない
-//   管理（admin）：編集に加えて、メンバー表と名前を変えられる
+//   管理（admin）：編集に加えて、メンバー表と名前、招待リンクを変えられる。記録を見られる
 //   作った人（owner）：管理のまま外せない。グループを消せるのは作った人だけ
+// groups/{gid}/invites/{iid}：招待リンク。iid がリンクの合言葉。有効なリンクを開いた人は、自分でメンバーに入れる
+// groups/{gid}/logs/{lid}：記録（だれが・いつ・何をしたか）。あとから書き換えられない
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{uid} {
@@ -16,9 +18,11 @@ service cloud.firestore {
       function verified() { return request.auth != null && request.auth.token.email_verified == true; }
       function me() { return request.auth.token.email.lower(); }
       function roleIn(d) { return d.roles.get(me(), 'none'); }
+      function gpath() { return /databases/$(database)/documents/groups/$(gid); }
+      function isAdmin() { return roleIn(get(gpath()).data) == 'admin'; }
       // グループの形。roles（メールアドレス → 権限）と emails（検索用の一覧）は同じ人たちを指す
       function validGroup(d) {
-        return d.keys().hasOnly(['name', 'owner', 'ownerEmail', 'roles', 'emails', 'data', 'by', 'rev', 'updatedAt', 'updatedBy'])
+        return d.keys().hasOnly(['name', 'owner', 'ownerEmail', 'roles', 'emails', 'data', 'by', 'rev', 'updatedAt', 'updatedBy', 'lastJoin'])
           && d.keys().hasAll(['name', 'owner', 'ownerEmail', 'roles', 'emails', 'data'])
           && d.name is string && d.name.size() >= 1 && d.name.size() <= 40
           && d.data is string
@@ -42,24 +46,88 @@ service cloud.firestore {
           && request.resource.data.roles.diff(resource.data.roles).changedKeys().size() == 0
           && validGroup(request.resource.data);
       }
+      // 招待リンクで自分をメンバーに入れる。リンクが有効で、権限はリンクで決めたもの。同じ書き込みで記録も残すこと
+      function joinByLink() {
+        let d = request.resource.data;
+        let r = d.roles.diff(resource.data.roles);
+        let inv = get(/databases/$(database)/documents/groups/$(gid)/invites/$(d.lastJoin.invite)).data;
+        return d.diff(resource.data).affectedKeys().hasOnly(['roles', 'emails', 'lastJoin'])
+          && r.addedKeys() == [me()].toSet()
+          && r.changedKeys().size() == 0 && r.removedKeys().size() == 0
+          && d.lastJoin.keys().toSet() == ['email', 'invite', 'log', 'at'].toSet()
+          && d.lastJoin.email == me() && d.lastJoin.at == request.time
+          && inv.on == true && d.roles[me()] == inv.role
+          && existsAfter(/databases/$(database)/documents/groups/$(gid)/logs/$(d.lastJoin.log))
+          && validGroup(d);
+      }
 
       allow read: if verified() && me() in resource.data.emails;
 
       allow create: if verified()
         && validGroup(request.resource.data)
+        && !('lastJoin' in request.resource.data)
         && request.resource.data.owner == request.auth.uid
         && request.resource.data.ownerEmail == me();
 
       allow update: if verified() && (
         (roleIn(resource.data) == 'admin'
           && validGroup(request.resource.data)
+          && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['lastJoin'])
           && request.resource.data.owner == resource.data.owner
           && request.resource.data.ownerEmail == resource.data.ownerEmail)
         || (roleIn(resource.data) == 'editor' && onlyData())
         || (roleIn(resource.data) != 'none' && onlyLeave())
+        || (roleIn(resource.data) == 'none' && joinByLink())
       );
 
       allow delete: if verified() && resource.data.owner == request.auth.uid;
+
+      // 招待リンク。合言葉（iid）を知っている人は中身（グループ名と権限、有効かどうか）を読める。一覧を見られるのは管理の人だけ
+      // リンクの権限はあとから変えない（変えたいときは新しいリンクを作り、古いリンクを無効にする）
+      match /invites/{iid} {
+        function validInvite(v) {
+          return v.keys().hasOnly(['role', 'on', 'name', 'byName', 'at'])
+            && v.keys().hasAll(['role', 'on', 'name', 'at'])
+            && v.role in ['editor', 'viewer']
+            && v.on is bool
+            && v.name is string && v.name.size() <= 40
+            && (!('byName' in v) || (v.byName is string && v.byName.size() <= 100));
+        }
+        allow get: if verified();
+        allow list: if verified() && isAdmin();
+        allow create: if verified() && isAdmin() && iid.size() >= 20
+          && validInvite(request.resource.data) && request.resource.data.at == request.time;
+        allow update: if verified() && isAdmin()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['on', 'name'])
+          && validInvite(request.resource.data);
+        allow delete: if verified() && isAdmin();
+      }
+
+      // 記録。書いた人（by）は自分、時刻はサーバーの時刻。消せるのはグループを消すときの作った人だけ
+      match /logs/{lid} {
+        function validLog(v) {
+          return v.keys().hasOnly(['type', 'by', 'byName', 'at', 'who', 'role', 'from', 'to', 'invite'])
+            && v.keys().hasAll(['type', 'by', 'at'])
+            && v.by == me() && v.at == request.time
+            && (!('byName' in v) || (v.byName is string && v.byName.size() <= 100));
+        }
+        // 招待リンクで入った記録：同じ書き込みでメンバー表に入った本人だけが書ける
+        function joinLog() {
+          let g = getAfter(gpath()).data;
+          return g.lastJoin.log == lid && g.lastJoin.email == me() && g.lastJoin.at == request.time
+            && request.resource.data.invite == g.lastJoin.invite
+            && request.resource.data.role == g.roles.get(me(), 'none');
+        }
+        allow get, list: if verified() && isAdmin();
+        allow create: if verified() && validLog(request.resource.data) && (
+          (request.resource.data.type == 'join' && joinLog())
+          || (request.resource.data.type == 'create' && !exists(gpath()) && getAfter(gpath()).data.owner == request.auth.uid)
+          || (request.resource.data.type == 'leave' && roleIn(get(gpath()).data) != 'none' && roleIn(getAfter(gpath()).data) == 'none')
+          || (request.resource.data.type in ['add', 'role', 'remove', 'rename', 'link-new', 'link-on', 'link-off', 'link-del'] && isAdmin())
+        );
+        allow update: if false;
+        allow delete: if verified() && get(gpath()).data.owner == request.auth.uid;
+      }
     }
   }
 }
