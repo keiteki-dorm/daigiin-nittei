@@ -561,8 +561,16 @@ function loadPrefs() { try { prefs = JSON.parse(localStorage.getItem(PREF_KEY) |
 function savePrefs() { try { localStorage.setItem(PREF_KEY, JSON.stringify(prefs)); } catch (e) {} }
 
 /* ===== クラウド同期（Firebase：Googleでログインした本人だけが読み書きできる） ===== */
-// Firebase コンソールの「ウェブアプリ」の firebaseConfig をここに貼る。null のあいだは、このブラウザの中だけに保存する
-const FIREBASE_CONFIG = null;
+// Firebase のウェブアプリの設定（公開してよい値）。null にすると、このブラウザの中だけに保存する
+// プロジェクト：daigiin-nittei-328。Firestore のルールは firestore.rules
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyDt5ISFZmgCRK41jwB3D0p-Uz7ZXK3KQLE',
+  authDomain: 'daigiin-nittei-328.firebaseapp.com',
+  projectId: 'daigiin-nittei-328',
+  storageBucket: 'daigiin-nittei-328.firebasestorage.app',
+  messagingSenderId: '834043282022',
+  appId: '1:834043282022:web:ac3d6c7b324a1f9de7a3a7',
+};
 const FB_VER = '11.6.0';
 const cloud = {ready: false, user: null, status: 'off', A: null, F: null, auth: null, db: null, timer: null, unsub: null, clientId: uid(), lastRev: null};
 async function initCloud() {
