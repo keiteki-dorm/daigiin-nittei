@@ -1,9 +1,65 @@
 rules_version = '2';
-// ログインした本人の users/{uid} だけ読み書きできる。ほかの人のデータは見えない
+// users/{uid}：自分のデータ。ログインした本人だけが読み書きできる
+// groups/{gid}：グループのデータ。メンバー表（roles）に Google アカウントのメールアドレスが載っている人だけが開ける
+//   閲覧（viewer）：読むだけ
+//   編集（editor）：日程のデータ（data）を書ける。メンバー表と名前は変えられない
+//   管理（admin）：編集に加えて、メンバー表と名前を変えられる
+//   作った人（owner）：管理のまま外せない。グループを消せるのは作った人だけ
 service cloud.firestore {
   match /databases/{database}/documents {
     match /users/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    match /groups/{gid} {
+      // メールアドレスは小文字でそろえて比べる。確認済みのアドレス（Google ログイン）だけを信用する
+      function verified() { return request.auth != null && request.auth.token.email_verified == true; }
+      function me() { return request.auth.token.email.lower(); }
+      function roleIn(d) { return d.roles.get(me(), 'none'); }
+      // グループの形。roles（メールアドレス → 権限）と emails（検索用の一覧）は同じ人たちを指す
+      function validGroup(d) {
+        return d.keys().hasOnly(['name', 'owner', 'ownerEmail', 'roles', 'emails', 'data', 'by', 'rev', 'updatedAt', 'updatedBy'])
+          && d.keys().hasAll(['name', 'owner', 'ownerEmail', 'roles', 'emails', 'data'])
+          && d.name is string && d.name.size() >= 1 && d.name.size() <= 40
+          && d.data is string
+          && d.roles is map && d.emails is list
+          && d.emails.size() >= 1 && d.emails.size() <= 50
+          && d.roles.size() == d.emails.size()
+          && d.roles.keys().toSet() == d.emails.toSet()
+          && d.roles.values().toSet().hasOnly(['admin', 'editor', 'viewer'])
+          && d.roles.get(d.ownerEmail, 'none') == 'admin';
+      }
+      // 日程のデータを保存するときに変わる項目
+      function onlyData() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['data', 'by', 'rev', 'updatedAt', 'updatedBy'])
+          && request.resource.data.data is string;
+      }
+      // 自分だけをメンバー表から外す（グループから抜ける）
+      function onlyLeave() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['roles', 'emails'])
+          && request.resource.data.roles.diff(resource.data.roles).removedKeys().hasOnly([me()])
+          && request.resource.data.roles.diff(resource.data.roles).addedKeys().size() == 0
+          && request.resource.data.roles.diff(resource.data.roles).changedKeys().size() == 0
+          && validGroup(request.resource.data);
+      }
+
+      allow read: if verified() && me() in resource.data.emails;
+
+      allow create: if verified()
+        && validGroup(request.resource.data)
+        && request.resource.data.owner == request.auth.uid
+        && request.resource.data.ownerEmail == me();
+
+      allow update: if verified() && (
+        (roleIn(resource.data) == 'admin'
+          && validGroup(request.resource.data)
+          && request.resource.data.owner == resource.data.owner
+          && request.resource.data.ownerEmail == resource.data.ownerEmail)
+        || (roleIn(resource.data) == 'editor' && onlyData())
+        || (roleIn(resource.data) != 'none' && onlyLeave())
+      );
+
+      allow delete: if verified() && resource.data.owner == request.auth.uid;
     }
   }
 }
