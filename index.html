@@ -137,6 +137,51 @@ textarea{width:100%;resize:vertical}
 .ov-cl{position:absolute;top:121px;transform:translateX(-50%);font-size:11px;color:var(--text2);white-space:nowrap;line-height:14px}
 .ov-cn{position:absolute;top:110px;left:0;font-size:11px;color:var(--text2);background:var(--panel);padding-right:4px}
 .ov-cline{position:absolute;left:0;right:0;top:118px;border-top:1px dashed var(--line2)}
+/* 俯瞰バーの「詳しく」：回ごとに段を分け、期間の重なりと各段階を見せる */
+.ov.dt .ov-today{top:0;z-index:4}
+.ov.dt .ov-today span{top:1px}
+.od-lb{position:absolute;top:0;bottom:0;background:var(--lb)}
+.od-wk{position:absolute;bottom:0;border-left:1px dotted var(--line)}
+.od-sd{position:absolute;transform:translateX(-50%);font-size:10px;line-height:12px;color:var(--text3);white-space:nowrap}
+.od-ev{position:absolute;height:14px;border-radius:3px;font-size:11px;line-height:14px;padding:0 4px;white-space:nowrap;background:hsl(var(--h) var(--es) var(--el));color:hsl(var(--h) 45% var(--et));z-index:2}
+.od-more{position:absolute;right:2px;font-size:10px;line-height:14px;color:var(--text3);background:var(--panel);padding:0 3px;z-index:2}
+.od-gl{position:absolute;height:0;border-top:1px solid var(--line2);z-index:2}
+.od-gl::before,.od-gl::after{content:"";position:absolute;top:-4px;height:7px;border-left:1px solid var(--line2)}
+.od-gl::before{left:0}.od-gl::after{right:0}
+.od-gl.warn,.od-gl.warn::before,.od-gl.warn::after{border-color:var(--warn-line)}
+.od-gl.error,.od-gl.error::before,.od-gl.error::after{border-color:var(--err)}
+.od-gt{position:absolute;transform:translateX(-50%);font-size:11px;line-height:13px;color:var(--text2);background:var(--panel);padding:0 3px;white-space:nowrap;z-index:3;border-radius:3px}
+.od-gt.warn{color:var(--warn);font-weight:700}
+.od-gt.error{color:var(--err);font-weight:700}
+.od-vl{position:absolute;width:0;border-left:1px dashed hsl(var(--h) 55% var(--cb));opacity:.55;z-index:1}
+.od-bg{position:absolute;height:22px;border-radius:4px;background:hsl(var(--h) var(--cs) var(--cl));opacity:.75;z-index:2}
+.od-bg.sel{opacity:1;box-shadow:0 0 0 2px hsl(var(--h) 60% var(--cb))}
+.od-base{position:absolute;height:0;border-top:1px solid hsl(var(--h) 55% var(--cb));z-index:3}
+.od-p{position:absolute;height:5px;border-radius:2px;background:hsl(var(--h) 55% var(--cb));opacity:.55;z-index:3}
+.od-k{position:absolute;width:2px;height:12px;margin-left:-1px;border-radius:1px;background:hsl(var(--h) 55% var(--cb));z-index:3}
+.od-h{position:absolute;height:13px;border-radius:3px;background:hsl(var(--h) var(--cs) var(--cl));border:1.5px solid hsl(var(--h) 55% var(--cb));z-index:3}
+.od-r{position:absolute;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:hsl(var(--h) 55% var(--cb));z-index:3}
+.od-x{position:absolute;height:3px;border-radius:2px;z-index:4;background:var(--warn-line)}
+.od-x.error{background:var(--err)}
+.od-d{position:absolute;width:6px;height:26px;margin-left:-3px;border-radius:2px;background:hsl(var(--h) 62% var(--dl));z-index:5}
+.od-sl{position:absolute;transform:translateX(-50%);font-size:10px;line-height:12px;color:hsl(var(--h) 45% var(--ct));white-space:nowrap;z-index:3}
+.od-ml{position:absolute;transform:translateX(-50%);font-size:11px;line-height:14px;white-space:nowrap;z-index:3;color:var(--text2)}
+.od-ml b{color:hsl(var(--h) 60% var(--ct))}
+.od-ml.err b{color:var(--err);text-decoration:underline wavy}
+.od-ml.warn b{text-decoration:underline dotted var(--warn-line)}
+.od-cn{position:absolute;left:0;font-size:11px;line-height:14px;color:var(--text2);background:var(--panel);padding-right:4px;z-index:3}
+.od-cline{position:absolute;left:0;right:0;border-top:1px dashed var(--line2)}
+.od-cp{position:absolute;height:3px;background:var(--text3);opacity:.45}
+.od-ch{position:absolute;height:9px;border-radius:2px;border:1px solid var(--text3);background:var(--panel2)}
+.od-ct{position:absolute;width:4px;height:16px;margin-left:-2px;border-radius:1px;background:var(--text3)}
+.od-cl{position:absolute;transform:translateX(-50%);font-size:11px;line-height:14px;color:var(--text2);white-space:nowrap}
+.seg{display:inline-flex;align-items:center;gap:6px}
+.seg .sb{display:inline-flex}
+.seg .sb button{border-radius:0;padding:0 10px;line-height:22px;font-size:12px}
+.seg .sb button:first-child{border-radius:7px 0 0 7px}
+.seg .sb button:last-child{border-radius:0 7px 7px 0;margin-left:-1px}
+.seg .sb button.on{background:var(--accent-bg);border-color:var(--accent);color:var(--text);font-weight:600;position:relative}
+.seg .sb button:hover:not(:disabled){transform:none;box-shadow:none}
 
 main{display:grid;grid-template-columns:minmax(0,1fr) 7px 400px;flex:1;min-height:0}
 main.custom{grid-template-columns:min(var(--calW), calc(100% - 327px)) 7px minmax(320px,1fr)}
@@ -1420,8 +1465,20 @@ function render() {
   R = checkPlan(effectivePlan(p));
   RC = ui.compare ? checkPlan(planById(ui.compare)) : null;
   renderHeader(); renderBanner(); renderPlanbar();
-  const ov = $('#ov'); ov.innerHTML = overviewHTML(R, RC, ui.compare ? planById(ui.compare).name : ''); ov.classList.toggle('cmp', !!RC);
-  renderCalendar(); renderSide();
+  renderOverview(); renderCalendar(); renderSide();
+}
+// 俯瞰バー。「詳しく」は横幅（px）で文字の重なりを避けるので、幅が変わったら描き直す
+const ovDetail = () => prefs.ovDetail === true;
+let ovW = 0;
+function renderOverview() {
+  const ov = $('#ov'), det = ovDetail(), cmpName = ui.compare ? planById(ui.compare).name : '';
+  ov.classList.toggle('dt', det); ov.classList.toggle('cmp', !!RC && !det);
+  if (det) { ovW = ov.clientWidth; const o = overviewDetailHTML(R, RC, cmpName, ovW); ov.innerHTML = o.h; ov.style.height = o.height + 'px'; }
+  else { ov.innerHTML = overviewHTML(R, RC, cmpName); ov.style.height = ''; }
+}
+function setOvMode(det) {
+  if (det === ovDetail()) return;
+  prefs.ovDetail = det; savePrefs(); renderPlanbar(); renderOverview();
 }
 function renderHeader() {
   const ne = R.issues.filter(x => x.level === 'error').length, nw = R.issues.filter(x => x.level === 'warn').length;
@@ -1448,7 +1505,9 @@ function renderPlanbar() {
   const p = activePlan();
   let h = `<span class="pl">案</span><div class="tabs">${T.plans.map(x => `<button class="ptab ${x.id === p.id ? 'on' : ''}" data-act="plan" data-pid="${x.id}" title="ダブルクリックで名前を変える">${esc(x.name)}${T.confirmed && T.confirmed.planId === x.id ? ' <i class="cf">確定</i>' : ''}</button>`).join('')}`;
   if (!RO()) h += `<button class="ptab add" data-act="plan-menu">＋ 案を増やす・編集</button>`;
-  h += `</div><span class="zoom" title="カレンダーの表示サイズ"><span class="pl">表示</span><button data-act="zoom" data-d="-1" aria-label="小さく" ${calSize() === 0 ? 'disabled' : ''}>−</button><span class="zv">${CAL_SIZES[calSize()]}</span><button data-act="zoom" data-d="1" aria-label="大きく" ${calSize() === CAL_SIZES.length - 1 ? 'disabled' : ''}>＋</button></span>`;
+  const det = ovDetail();
+  h += `</div><span class="seg" title="上の俯瞰バーの表示"><span class="pl">俯瞰</span><span class="sb" role="group" aria-label="俯瞰バーの表示"><button data-act="ov-mode" data-v="0" class="${det ? '' : 'on'}" aria-pressed="${!det}">ざっくり</button><button data-act="ov-mode" data-v="1" class="${det ? 'on' : ''}" aria-pressed="${det}">詳しく</button></span></span>`;
+  h += `<span class="zoom" title="カレンダーの表示サイズ"><span class="pl">表示</span><button data-act="zoom" data-d="-1" aria-label="小さく" ${calSize() === 0 ? 'disabled' : ''}>−</button><span class="zv">${CAL_SIZES[calSize()]}</span><button data-act="zoom" data-d="1" aria-label="大きく" ${calSize() === CAL_SIZES.length - 1 ? 'disabled' : ''}>＋</button></span>`;
   h += `<label class="cmp">比べる案 <select data-act-change="compare"><option value="">なし</option>${T.plans.filter(x => x.id !== p.id).map(x => `<option value="${x.id}" ${ui.compare === x.id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></label>`;
   h += `<input class="pmemo" data-act-change="plan-memo" placeholder="この案のねらい（メモ）" value="${esc(p.memo || '')}" ${RO() ? 'disabled' : ''}>`;
   $('#planbar').innerHTML = h;
@@ -1489,6 +1548,122 @@ function overviewHTML(r, rc, cmpName) {
   }
   if (TODAY >= a && TODAY <= b) h += `<div class="ov-today" style="left:${X(TODAY + 0.5)}"><span>今日</span></div>`;
   return h;
+}
+
+// 文字の幅のおおよそ（全角は1文字ぶん、半角は0.6文字ぶん）
+const txtW = (s, fs) => [...String(s)].reduce((w, ch) => w + (ch.charCodeAt(0) > 255 ? fs : fs * 0.6), 0);
+// 区間を重ならない段に振り分ける。x.l に段の番号を入れ、段の数を返す
+function packLanes(list, from, to) {
+  const ends = [];
+  list.forEach(x => { const s = from(x); let l = ends.findIndex(v => v < s); if (l < 0) { l = ends.length; ends.push(to(x)); } else ends[l] = to(x); x.l = l; });
+  return ends.length;
+}
+// 俯瞰バーの「詳しく」：予定は名前が読めるように段を分け、代議員会は期間（第一稿〜当日）が重なる回を別の段に置く
+function overviewDetailHTML(r, rc, cmpName, wpx) {
+  const [a, b] = calRange(), tot = b - a + 1, S = T.settings, pxd = (wpx > 0 ? wpx : 1200) / tot, dOf = p => p / pxd;
+  const X = d => ((d - a) / tot * 100).toFixed(3) + '%', W = n => (n / tot * 100).toFixed(3) + '%';
+  const ts = toDn(T.term.start), [nfs, nfe] = nfRange(T.term.end);
+  const EV_T = 28, EV_LH = 16, EV_MAX = 6, LH = 52;
+  let h = `<div class="ov-out" style="left:0;width:${W(ts - a)}"></div><div class="ov-nx" style="left:${X(nfs)};width:${W(nfe - nfs + 1)}"><span>${T.term.number + 1}期</span></div><div class="ov-out" style="left:${X(nfe + 1)};right:0"></div>`;
+  T.events.filter(e => e.cat === 'longbreak').forEach(e => {
+    const s = Math.max(a, toDn(e.start)), t = Math.min(b, toDn(e.end));
+    if (s <= t) h += `<div class="od-lb" style="left:${X(s)};width:${W(t - s + 1)}"></div>`;
+  });
+  for (let d = a + 7; d <= b; d += 7) h += `<div class="od-wk" style="left:${X(d)};top:14px"></div>`;
+  let {y, m} = dnYmd(a);
+  for (;;) { const d = dnOf(y, m, 1); if (d > b) break; if (d >= a) h += `<div class="ov-m" style="left:${X(d)}">${m}月</div>`; m++; if (m > 12) { m = 1; y++; } }
+  if (pxd * 7 >= 16) for (let d = a; d <= b; d++) if (dow(d) === 6) h += `<div class="od-sd" style="left:${X(d + 0.5)};top:14px">${dnYmd(d).d}</div>`;
+
+  // 予定
+  const evs = T.events.map(e => ({e, s: Math.max(a, toDn(e.start)), t: Math.min(b, toDn(e.end))})).filter(x => x.s <= x.t).sort((p, q) => p.s - q.s || q.t - p.t);
+  const nEv = Math.min(EV_MAX, packLanes(evs, x => x.s, x => Math.max(x.t + 1, x.s + dOf(txtW(x.e.title, 11) + 8)) + dOf(4)));
+  evs.filter(x => x.l < EV_MAX).forEach(x => {
+    const c = CATS[x.e.cat] || CATS.memo;
+    h += `<div class="od-ev" style="left:${X(x.s)};width:${W(x.t - x.s + 1)};top:${EV_T + x.l * EV_LH}px;--h:${c.hue};${c.sat != null ? `--es:${c.sat}%;` : ''}" title="${esc(x.e.title)}（${esc(catTitle(x.e.cat))}） ${fmt(toDn(x.e.start))}〜${fmt(toDn(x.e.end))}">${esc(x.e.title)}</div>`;
+  });
+  const hid = evs.filter(x => x.l >= EV_MAX);
+  if (hid.length) h += `<div class="od-more" style="top:${EV_T + (EV_MAX - 1) * EV_LH}px" title="${esc(hid.map(x => x.e.title).join('、'))}">ほか${hid.length}件</div>`;
+
+  // 代議員会：間隔の寸法線、回ごとの段
+  const GT = EV_T + nEv * EV_LH + (nEv ? 4 : 0), MT = GT + 20;
+  const ms = r.sorted.map((mm, i) => {
+    const c = r.chains.get(mm.id), all = [c.draft, c.dist, ...c.heyairi, c.report, c.rmeet, c.D];
+    return {m: mm, c, hue: HUES[i % HUES.length], lab: `${mShort(mm)} ${fmt(c.D, dow(c.D) !== 6)}`, s: Math.min(...all), t: Math.max(...all)};
+  });
+  // 段を分けるのは期間そのものが重なるときだけ（回の名前は帯の下、段階名は帯の上なので、隣の回の帯とはぶつからない）
+  const nL = packLanes([...ms].sort((p, q) => p.s - q.s), x => x.s, x => x.t + 1 + dOf(4));
+  ms.forEach((x, i) => {
+    if (!i) return;
+    const p = ms[i - 1], pd = p.c.D, D = x.c.D, g = D - pd;
+    const lvl = g < S.minSpan ? 'error' : (g < S.recSpan && x.m.kind === '定例' && p.m.kind === '定例') ? 'warn' : '';
+    h += `<div class="od-gl ${lvl}" style="left:${X(pd + 0.5)};width:${W(g)};top:${GT + 9}px"></div>`;
+    h += `<div class="od-gt ${lvl}" style="left:${X((pd + D) / 2 + 0.5)};top:${GT + 3}px" title="${esc(mLabel(p.m))}から${esc(mLabel(x.m))}まで${gapText(g)}">${g % 7 ? g + '日' : g / 7 + '週'}</div>`;
+  });
+  const sl = [], ml = [];
+  ms.forEach(x => {
+    const {m: mm, c} = x, y = MT + x.l * LH, cy = y + 23, st = `--h:${x.hue}`, id = `data-mid="${mm.id}"`, tt = esc(mLabel(mm));
+    const iss = r.issues.filter(z => z.at === mm.id), bad = iss.some(z => z.level === 'error');
+    const lab = (d, opts) => (sl[x.l] = sl[x.l] || []).push({d, opts, hue: x.hue});
+    h += `<div class="od-vl" style="left:${X(c.D + 0.5)};top:${GT + 9}px;height:${y + 11 - GT - 9}px;${st}"></div>`;
+    h += `<div class="od-bg${ui.sel === mm.id ? ' sel' : ''}" ${id} style="left:${X(x.s)};width:${W(x.t - x.s + 1)};top:${y + 12}px;${st}" title="${tt}の期間 ${fmt(x.s)}〜${fmt(x.t)}"></div>`;
+    h += `<div class="od-base" style="left:${X(x.s + 0.5)};width:${W(x.t - x.s)};top:${cy}px;${st}"></div>`;
+    h += `<div class="od-p" ${id} style="left:${X(c.draft + 0.5)};width:${W(Math.max(0, c.dist - c.draft))};top:${cy - 2}px;${st}" title="${tt} 第一稿 ${fmt(c.draft)} → 議案配布 ${fmt(c.dist)}"></div>`;
+    h += `<div class="od-k" ${id} style="left:${X(c.draft + 0.5)};top:${cy - 6}px;${st}" title="${tt} 議長団第一稿 ${fmt(c.draft)}"></div>`;
+    h += `<div class="od-k" ${id} style="left:${X(c.dist + 0.5)};top:${cy - 6}px;${st}" title="${tt} 議案配布 ${fmt(c.dist)}"></div>`;
+    lab(c.draft + 0.5, ['第一稿', '稿']); lab(c.dist + 0.5, ['配布', '配']);
+    runs(c.heyairi).forEach(([s, e]) => {
+      h += `<div class="od-h" ${id} style="left:${X(s)};width:${W(e - s + 1)};top:${cy - 6}px;${st}" title="${tt} 部屋入り ${s === e ? fmt(s) : `${fmt(s)}〜${fmt(e)}`}"></div>`;
+      lab((s + e + 1) / 2, ['部屋入り', '部屋', '部']);
+    });
+    h += `<div class="od-r" ${id} style="left:${X(c.report + 0.5)};top:${cy - 3}px;${st}" title="${tt} 部屋入り報告 ${fmt(c.report)}"></div>`;
+    h += `<div class="od-r" ${id} style="left:${X(c.rmeet + 0.5)};top:${cy - 3}px;${st}" title="${tt} 部屋入り報告集会 ${fmt(c.rmeet)}"></div>`;
+    if (Math.abs(c.rmeet - c.report) <= 2) lab((c.report + c.rmeet + 1) / 2, ['報告・集会', '報・集', '報']);
+    else { lab(c.report + 0.5, ['報告', '報']); lab(c.rmeet + 0.5, ['集会', '集']); }
+    // 予定との重なりなど、問題のある日に印
+    r.issues.filter(z => z.mids.includes(mm.id) && z.dns.length).forEach(z => runs(z.dns).forEach(([s, e]) => {
+      h += `<div class="od-x ${z.level}" ${id} style="left:${X(s)};width:${W(e - s + 1)};top:${y + 31}px" title="${esc(z.msg)}"></div>`;
+    }));
+    h += `<div class="od-d" ${id} style="left:${X(c.D + 0.5)};top:${y + 11}px;${st}" title="${tt} ${fmt(c.D)}"></div>`;
+    const nm = `<b>${esc(mShort(mm))}</b>`, dt = fmt(c.D, dow(c.D) !== 6);
+    (ml[x.l] = ml[x.l] || []).push({d: c.D + 0.5, opts: [[`${nm} ${dt}`, txtW(x.lab, 11)], [nm, txtW(mShort(mm), 11)]],
+      pre: `<div class="od-ml ${bad ? 'err' : iss.length ? 'warn' : ''}" ${id} style="left:${X(c.D + 0.5)};top:${y + 36}px;${st}" title="${tt} ${fmt(c.D)}">`});
+  });
+  // 回の名前と段階名は、同じ段で重ならないものだけ出す（入らなければ短くする）
+  ml.forEach(list => {
+    let right = -Infinity;
+    list.sort((p, q) => p.d - q.d).forEach(z => {
+      const cx = (z.d - a) * pxd, o = z.opts.find(([, w]) => cx - w / 2 >= right + 4);
+      if (o) { h += `${z.pre}${o[0]}</div>`; right = cx + o[1] / 2; }
+    });
+  });
+  sl.forEach((list, l) => {
+    let right = -Infinity;
+    list.sort((p, q) => p.d - q.d).forEach(z => {
+      const cx = (z.d - a) * pxd;
+      for (const t of z.opts) {
+        const w = txtW(t, 10);
+        if (cx - w / 2 < right + 3) continue;
+        h += `<div class="od-sl" style="left:${X(z.d)};top:${MT + l * LH}px;--h:${z.hue}">${t}</div>`; right = cx + w / 2; break;
+      }
+    });
+  });
+  let H = MT + Math.max(nL, 1) * LH;
+  if (rc) {
+    const CT = H + 2;
+    h += `<div class="od-cline" style="top:${CT + 8}px"></div>`;
+    let right = -Infinity;
+    rc.sorted.forEach(mm => {
+      const c = rc.chains.get(mm.id), tt = `${esc(cmpName)}の${esc(mLabel(mm))}`, cx = (c.D + 0.5 - a) * pxd, w = txtW(mShort(mm), 11);
+      h += `<div class="od-cp" style="left:${X(c.draft + 0.5)};width:${W(Math.max(0, c.dist - c.draft))};top:${CT + 7}px" title="${tt} 第一稿〜議案配布"></div>`;
+      runs(c.heyairi).forEach(([s, e]) => { h += `<div class="od-ch" style="left:${X(s)};width:${W(e - s + 1)};top:${CT + 4}px" title="${tt} 部屋入り"></div>`; });
+      h += `<div class="od-ct" style="left:${X(c.D + 0.5)};top:${CT}px" title="${tt} ${fmt(c.D)}"></div>`;
+      if (cx - w / 2 >= right + 3) { h += `<div class="od-cl" style="left:${X(c.D + 0.5)};top:${CT + 16}px">${esc(mShort(mm))}</div>`; right = cx + w / 2; }
+    });
+    h += `<div class="od-cn" style="top:${CT + 1}px">${esc(cmpName)}</div>`;
+    H = CT + 32;
+  }
+  if (TODAY >= a && TODAY <= b) h += `<div class="ov-today" style="left:${X(TODAY + 0.5)}"><span>今日</span></div>`;
+  return {h, height: H + 2};
 }
 
 function renderCalendar() {
@@ -2349,7 +2524,8 @@ function openHelp() {
       <li>カレンダーの日曜をクリックすると、代議員会を置けます。第一稿・議案配布・部屋入り・報告・報告集会が自動で並びます。</li>
       <li>色の札はドラッグで動かせます。代議員会の札を動かすと日程がまとめて動き、動かしている間は日曜に ○△× が出ます（×はエラー、△は注意）。</li>
       <li>部屋入りや議案配布の札だけを動かすこともできます。右の一覧で回を選ぶと、型の変更や日ごとの調整ができます。</li>
-      <li>次の期の最初の回（6月定例・12月定例）も今期のうちに決めます。カレンダーの薄紫の月に置きます。</li></ul></section>
+      <li>次の期の最初の回（6月定例・12月定例）も今期のうちに決めます。カレンダーの薄紫の月に置きます。</li>
+      <li>上の俯瞰バーは「ざっくり／詳しく」で切り替えられます。「詳しく」では、第一稿から代議員会までの期間が重なる回が別の段に分かれ、予定と重なる日に色の線が付きます。</li></ul></section>
     <section><h4>予定を入れる</h4><ul>
       <li>カレンダーで日付をドラッグして範囲を選ぶと、テスト・追いコン・新歓・寮祭・選挙などの予定を入れられます。</li>
       <li>予定の種類ごとに、代議員会のどの段階と重なると注意を出すかが決まっています（「予定」タブの下に一覧があります）。</li></ul></section>
@@ -2377,6 +2553,7 @@ function doAct(act, t, e) {
   switch (act) {
     case 'undo': undo(); break;
     case 'zoom': zoomCal(+t.dataset.d); break;
+    case 'ov-mode': setOvMode(t.dataset.v === '1'); break;
     case 'login': login(); break;
     case 'logout': logout(); break;
     case 'groups': openGroups(); break;
@@ -2428,6 +2605,13 @@ function bindEvents() {
     const r = e.currentTarget.getBoundingClientRect(), [a, b] = calRange();
     scrollToDn(a + Math.floor((e.clientX - r.left) / r.width * (b - a + 1)) - 7);
   });
+  if (window.ResizeObserver) {
+    let raf = 0;
+    new ResizeObserver(() => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; if (R && ovDetail() && Math.abs($('#ov').clientWidth - ovW) > 1) renderOverview(); });
+    }).observe($('#ov'));
+  }
   $('#cal').addEventListener('pointerdown', onCalDown);
   $('#kun').addEventListener('click', onKunClick);
   bindSplitter(); applySplit();
